@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'consul-services'
+    consul_sd_configs:
+      - server: '${CONSUL_HOST}:${CONSUL_PORT}'  
+        services: ['order-service', 'product-service']
+    metrics_path: '/metrics'
+    relabel_configs:
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        target_label: __address__
+        replacement: "${1}:${2}"  # Rewrites target as "IP:Port"
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['prometheus:9090']

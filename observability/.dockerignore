@@ -1,0 +1,60 @@
+# General
+**/*~
+**/*.log
+**/.DS_Store
+**/Thumbs.db
+
+# Python specific
+**/__pycache__
+**/*.py[cod]
+**/*$py.class
+**/.python-version
+
+# Environments
+.env
+.env.template
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+
+# Tests
+tests/
+test/
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Documentation
+docs/
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Git
+.git/
+.gitignore
+.gitattributes
+.gitmodules
+
+# Docker
+docker-compose*
+docker-compose/
+.dockerignore
+Dockerfile*
+dockerfile*
+docker-*
+Dockerfile
+
+# Local development files
+local_config/
+*.local
+*.dev
