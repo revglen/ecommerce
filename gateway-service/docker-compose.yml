@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+
+  consul-server:
+    image: hashicorp/consul:1.20
+    ports:
+      - "8300:8300"  # Server RPC
+      - "8301:8301/tcp"  # LAN gossip
+      - "8301:8301/udp"
+      - "8500:8500"  # HTTP API
+      - "8600:8600/tcp"  # DNS
+      - "8600:8600/udp"
+    command:  >
+        agent 
+        -server 
+        -ui 
+        -bootstrap-expect=1 
+        -node=consul-server 
+        -bind=0.0.0.0 
+        -client=0.0.0.0 
+    restart: always
+    networks:
+      - nginx-network
+     
+    volumes:
+      - ./data:/consul/data
+
+  api-gateway:
+    build: .
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      #- PRODUCT_IP=${PRODUCT_IP}
+      PRODUCT_IP: ${PRODUCT_IP}
+      ORDER_IP: ${ORDER_IP}
+      CONSUL_IP: ${CONSUL_IP}
+    networks:
+      - nginx-network
+    
+    env_file: .env
+    volumes:
+      - ./nginx/templates:/etc/nginx/templates
+      - ./nginx/templates/nginx.conf.template:/etc/nginx/templates/nginx.conf.template
+      - ./test.txt:/etc/nginx/test.txt
+      
+    #command: sh -c "sed -i 's/\\$PRODUCT_ID/22222/g' /etc/nginx/test.txt >> /etc/nginx/test1.txt && cat /etc/nginx/test1.txt "
+
+    #command: sh -c "sed 's/$$PRODUCT_ID/$PRODUCT_IP/g' /etc/nginx/test.txt > /tmp/test1.txt && cat /tmp/test1.txt "
+    #command: sh -c "sed 's/$$PRODUCT_IP/$PRODUCT_IP/g' /etc/nginx/templates/nginx.conf.template > /tmp/test1.txt && cat /tmp/test1.txt "
+    command: sh -c "sed -e 's/$$CONSUL_IP/$CONSUL_IP/g' -e 's/$$ORDER_IP/$ORDER_IP/g' /etc/nginx/templates/nginx.conf.template > /etc/nginx//nginx.conf &&               
+               cat /etc/nginx//nginx.conf && 
+               exec nginx -g 'daemon off;'"  
+      
+
+# Define networks and volumes
+networks:
+  nginx-network:
+    driver: bridge
+
+    

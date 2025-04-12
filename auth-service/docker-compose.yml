@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+ 
+  # auth Service
+  redis:
+    image: redis:alpine
+    volumes:
+      - redis_data:/data
+    networks:
+      - auth-network
+     
+  auth-service:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:     
+      - REDIS_URL=redis://redis:6379/0
+      - SERVICE_NAME=auth-service
+      - CONSUL_PORT=${CONSUL_PORT}
+      - CONSUL_HOST=${CONSUL_HOST}
+    depends_on:
+      - redis
+    networks:
+      - auth-network
+    ports:
+      - "8002:8002"
+         
+# Define networks and volumes
+networks:
+  auth-network:
+    driver: bridge
+  
+volumes:
+  redis_data:
