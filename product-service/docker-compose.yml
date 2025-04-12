@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+
+  # PostgreSQL Database Service
+  postgres:
+    image: postgres:13-alpine
+    container_name: product-db
+    environment:
+      POSTGRES_DB: product_db
+      POSTGRES_USER: product_user
+      POSTGRES_PASSWORD: product_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - product-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U product_user -d product_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # consul-agent:
+  #   image: hashicorp/consul:1.20
+  #   command: "agent -node=order-1 -retry-join=${CONSUL_HOST} -data-dir=/consul/data -server=false -bind=0.0.0.0 -client=0.0.0.0"
+  #   volumes:
+  #     - ./consul-data:/consul/data    
+  #   networks:
+  #     - product-network
+
+  # Product Service
+  product-service:
+    
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: product-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres  # Uses the service name as hostname
+      DB_PORT: 5432
+      DB_NAME: product_db
+      DB_USER: product_user
+      DB_PASSWORD: product_password
+      SECRET_KEY: Something
+      API_KEY: API_KEY
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      PROMETHEUS_ENABLED: true
+      LOG_LEVEL: INFO
+      CONSUL_HOST: ${CONSUL_HOST}
+      CONSUL_PORT: ${CONSUL_PORT}
+      SERVICE_NAME: order-service
+      SERVICE_PORT: 8000
+      EXTERNAL_HOST_IP: ${EXTERNAL_HOST_IP}
+
+    ports:
+      - "8000:8000"
+    networks:
+      - product-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# Define networks and volumes
+networks:
+  product-network:
+    driver: bridge
+
+volumes:
+  pgdata:
