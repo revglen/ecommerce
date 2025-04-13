@@ -22,8 +22,6 @@ services:
       - SERVICE_NAME=auth-service
       - CONSUL_PORT=${CONSUL_PORT}
       - CONSUL_HOST=${CONSUL_HOST}
-    depends_on:
-      - redis
     networks:
       - auth-network
     ports:
