@@ -11,8 +11,7 @@ def call(Map params) {
     // ✅ Use 'def' for local vars to avoid Groovy warnings
     def GATEWAY_VM_NAME = 'api-gateway'
     def IMAGE_NAME = 'api-gateway'
-    def COMPOSE_FILE = 'docker-compose.yml'
-    
+    def COMPOSE_FILE = 'docker-compose.yml'    
     
     
     stage('Build Gateway Service') {
@@ -24,9 +23,9 @@ def call(Map params) {
         }*/
 
         echo "${env.WORKSPACE}/gateway-service/${COMPOSE_FILE}"
-        //sh "echo \"CONSUL_IP=${env.CONSUL_IP}\" >> ${env.WORKSPACE}/gateway-service/.env"
-        //sh "cat ${env.WORKSPACE}/gateway-service/.env"
-        //sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
+        sh "echo \"CONSUL_IP=${env.CONSUL_IP}\" >> ${env.WORKSPACE}/gateway-service/.env"
+        sh "cat ${env.WORKSPACE}/gateway-service/.env"
+        sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
     }
     
     /*stage('Tag and Push Gateway Images') {
@@ -79,12 +78,12 @@ def call(Map params) {
                 }
             }
         }
-    }
+    }*/
     
     stage('Cleanup Gateway Containers') {
         echo "Stopping gateway containers"
         sh 'docker stop $(docker ps -q) || true'
-    }*/
+    }
 }
 
 return this
