@@ -28,7 +28,7 @@ def call(Map params) {
         def HOME = "${env.DOCKER_HOME}"    
         
         def services = sh(
-            script: "docker compose -f ${env.COMPOSE_FILE} config --services",
+            script: "docker compose -f $${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} config --services",
             returnStdout: true
         ).trim().split('\n')
                 
@@ -36,7 +36,7 @@ def call(Map params) {
             echo "--- Processing service: ${service} ---"
         
             def sourceImage = sh(
-                script: "docker compose -f ${env.COMPOSE_FILE} config | grep -A15 '${service}:' | grep 'image:' | awk '{print \$2}'",
+                script: "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} config | grep -A15 '${service}:' | grep 'image:' | awk '{print \$2}'",
                 returnStdout: true
             ).trim()
             
