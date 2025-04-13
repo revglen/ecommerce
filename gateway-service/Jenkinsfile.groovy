@@ -1,17 +1,17 @@
 def call(Map params) {
   
-    // Map parameters to environment variables
-    GCP_PROJECT = "${params.gcpProject}"
-    GITHUB_REPO = "${params.githubRepo}"
-    ZONE = "${params.zone}"
-    REGISTRY = "${params.registry}"
-    CONSUL_IP = "${params.consulIP}"
-    WORKSPACE = "${params.workspace}"
-    
-    // Local environment variables
-    GATEWAY_VM_NAME = 'api-gateway'
-    IMAGE_NAME = "api-gateway"
-    COMPOSE_FILE = "docker-compose.yml"
+    // ✅ Set env vars properly
+    env.GCP_PROJECT = params.gcpProject
+    env.GITHUB_REPO = params.githubRepo
+    env.ZONE = params.zone
+    env.REGISTRY = params.registry
+    env.CONSUL_IP = params.consulIP
+    env.WORKSPACE = params.workspace
+
+    // ✅ Use 'def' for local vars to avoid Groovy warnings
+    def GATEWAY_VM_NAME = 'api-gateway'
+    def IMAGE_NAME = 'api-gateway'
+    def COMPOSE_FILE = 'docker-compose.yml'
     
     
     stages {
