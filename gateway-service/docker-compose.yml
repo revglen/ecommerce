@@ -27,7 +27,7 @@ services:
       - ./data:/consul/data
 
   api-gateway:
-    image: api-gateway
+    image: api-gateway:v1
     build: .
     ports:
       - "80:80"
