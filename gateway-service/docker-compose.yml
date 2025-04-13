@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
 
-  cconsul-server:
+  consul-server:
     image: consul:1.15
     hostname: consul-server
     ports:
