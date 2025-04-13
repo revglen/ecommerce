@@ -28,7 +28,7 @@ def call(Map params) {
         def HOME = "${env.DOCKER_HOME}"    
         
         def services = sh(
-            script: "docker compose -f $${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} config --services",
+            script: "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} config --services",
             returnStdout: true
         ).trim().split('\n')
                 
