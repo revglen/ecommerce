@@ -1,17 +1,19 @@
-def call(Map config) {
+def call(Map params) {
     pipeline {
         agent any
         environment {
+            // Map parameters to environment variables
+            GCP_PROJECT = "${params.gcpProject}"
+            GITHUB_REPO = "${params.githubRepo}"
+            ZONE = "${params.zone}"
+            REGISTRY = "${params.registry}"
+            CONSUL_IP = "${params.consulIP}"
+            WORKSPACE = "${params.workspace}"
+            
+            // Local environment variables
             GATEWAY_VM_NAME = 'api-gateway'
             IMAGE_NAME = "api-gateway"
             COMPOSE_FILE = "docker-compose.yml"
-            // Inherit parameters from main pipeline
-            GCP_PROJECT = "${config.GCP_PROJECT}"
-            GITHUB_REPO = "${config.GITHUB_REPO}"
-            ZONE = "${config.ZONE}"
-            REGISTRY = "${config.REGISTRY}"
-            CONSUL_IP = "${config.CONSUL_IP}"
-            WORKSPACE = "${config.WORKSPACE}"
         }
         
         stages {
