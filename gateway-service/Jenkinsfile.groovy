@@ -16,15 +16,20 @@ def call(Map params) {
     
     
     stage('Build Gateway Service') {
-        steps {
+        /*steps {
             echo "${env.WORKSPACE}/gateway-service/${env.COMPOSE_FILE}"
             sh "echo \"CONSUL_IP=${env.CONSUL_IP}\" >> .env"
             sh "cat .env"
             sh "docker compose -f ${env.COMPOSE_FILE} up -d --build"
-        }
+        }*/
+
+        echo "${env.WORKSPACE}/gateway-service/${COMPOSE_FILE}"
+        sh "echo \"CONSUL_IP=${env.CONSUL_IP}\" >> ${env.WORKSPACE}/gateway-service/.env"
+        sh "cat ${env.WORKSPACE}/gateway-service/.env"
+        sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
     }
     
-    stage('Tag and Push Gateway Images') {
+    /*stage('Tag and Push Gateway Images') {
         environment {
             DOCKER_CONFIG = "${env.DOCKER_HOME}/.docker"
             HOME = "${env.DOCKER_HOME}"
@@ -74,7 +79,7 @@ def call(Map params) {
                 }
             }
         }
-    }
+    }*/
     
     stage('Cleanup Gateway Containers') {
         steps {
