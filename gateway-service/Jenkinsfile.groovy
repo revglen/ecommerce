@@ -79,12 +79,12 @@ def call(Map params) {
                 }
             }
         }
-    }*/
+    }
     
     stage('Cleanup Gateway Containers') {
         echo "Stopping gateway containers"
         sh 'docker stop $(docker ps -q) || true'
-    }
+    }*/
 }
 
 return this
