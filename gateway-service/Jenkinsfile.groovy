@@ -24,9 +24,9 @@ def call(Map params) {
         }*/
 
         echo "${env.WORKSPACE}/gateway-service/${COMPOSE_FILE}"
-        sh "echo \"CONSUL_IP=${env.CONSUL_IP}\" >> ${env.WORKSPACE}/gateway-service/.env"
-        sh "cat ${env.WORKSPACE}/gateway-service/.env"
-        sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
+        //sh "echo \"CONSUL_IP=${env.CONSUL_IP}\" >> ${env.WORKSPACE}/gateway-service/.env"
+        //sh "cat ${env.WORKSPACE}/gateway-service/.env"
+        //sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
     }
     
     /*stage('Tag and Push Gateway Images') {
@@ -71,21 +71,19 @@ def call(Map params) {
                     docker tag ${sourceImage} ${targetImage}
                     """
                     
-                    /*
-                    sh """
-                    docker push ${targetImage}
-                    """
-                    */
+                    
+                    //sh """
+                    //docker push ${targetImage}
+                    //"""
+                    
                 }
             }
         }
     }*/
     
     stage('Cleanup Gateway Containers') {
-        steps {
-            echo "Stopping gateway containers"
-            sh 'docker stop $(docker ps -q) || true'
-        }
+        echo "Stopping gateway containers"
+        sh 'docker stop $(docker ps -q) || true'
     }
 }
 
