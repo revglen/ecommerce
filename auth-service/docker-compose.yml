@@ -3,12 +3,12 @@ version: '3.8'
 services:
  
   # auth Service
-  redis:
-    image: redis:alpine
-    volumes:
-      - redis_data:/data
-    networks:
-      - auth-network
+  # redis:
+  #   image: redis:alpine
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - auth-network
      
   auth-service:
     build:
