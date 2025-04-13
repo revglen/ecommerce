@@ -17,10 +17,10 @@ def call(Map params) {
     stage('Build observability Service') {        
 
         echo "${env.WORKSPACE}/observability//${COMPOSE_FILE}"
-        sh "echo \"CONSUL_HOST=${env.CONSUL_IP}\" >> ${env.WORKSPACE}/observability//.env"
+        sh "echo \"CONSUL_HOST=${env.CONSUL_IP}\" >> ${env.WORKSPACE}/observability/.env"
         sh "echo \"CONSUL_PORT=8500\" >> ${env.WORKSPACE}/aobservability//.env"
-        sh "echo \"PROMETHEUS_ENABLED=true\" >> ${env.WORKSPACE}/observability//.env"
-        sh "echo \"LOG_LEVEL=INFO\" >> ${env.WORKSPACE}/aobservability//.env"
+        sh "echo \"PROMETHEUS_ENABLED=true\" >> ${env.WORKSPACE}/observability/.env"
+        sh "echo \"LOG_LEVEL=INFO\" >> ${env.WORKSPACE}/observability/.env"
         sh "cat ${env.WORKSPACE}/observability//.env"
         sh "docker compose -f ${env.WORKSPACE}/observability//${COMPOSE_FILE} up -d --build"
     }
