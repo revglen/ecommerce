@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   cconsul-server:
-    image: consul:latest
+    image: consul
     hostname: consul-server
     ports:
       - "8300:8300"  # Server RPC
