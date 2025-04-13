@@ -14,73 +14,72 @@ def call(Map params) {
     def COMPOSE_FILE = 'docker-compose.yml'
     
     
-    stages {
-        stage('Build Gateway Service') {
-            steps {
-                echo "${env.WORKSPACE}/gateway-service/${env.COMPOSE_FILE}"
-                sh "echo \"CONSUL_IP=${env.CONSUL_IP}\" >> .env"
-                sh "cat .env"
-                sh "docker compose -f ${env.COMPOSE_FILE} up -d --build"
-            }
+    
+    stage('Build Gateway Service') {
+        steps {
+            echo "${env.WORKSPACE}/gateway-service/${env.COMPOSE_FILE}"
+            sh "echo \"CONSUL_IP=${env.CONSUL_IP}\" >> .env"
+            sh "cat .env"
+            sh "docker compose -f ${env.COMPOSE_FILE} up -d --build"
         }
-        
-        stage('Tag and Push Gateway Images') {
-            environment {
-                DOCKER_CONFIG = "${env.DOCKER_HOME}/.docker"
-                HOME = "${env.DOCKER_HOME}"
-            }
-            steps {
-                script {
-                    def services = sh(
-                        script: "docker compose -f ${env.COMPOSE_FILE} config --services",
+    }
+    
+    stage('Tag and Push Gateway Images') {
+        environment {
+            DOCKER_CONFIG = "${env.DOCKER_HOME}/.docker"
+            HOME = "${env.DOCKER_HOME}"
+        }
+        steps {
+            script {
+                def services = sh(
+                    script: "docker compose -f ${env.COMPOSE_FILE} config --services",
+                    returnStdout: true
+                ).trim().split('\n')
+                
+                services.each { service ->
+                    echo "--- Processing service: ${service} ---"
+                
+                    def sourceImage = sh(
+                        script: "docker compose -f ${env.COMPOSE_FILE} config | grep -A15 '${service}:' | grep 'image:' | awk '{print \$2}'",
                         returnStdout: true
-                    ).trim().split('\n')
+                    ).trim()
                     
-                    services.each { service ->
-                        echo "--- Processing service: ${service} ---"
+                    echo "Source image from compose: '${sourceImage}'"
                     
-                        def sourceImage = sh(
-                            script: "docker compose -f ${env.COMPOSE_FILE} config | grep -A15 '${service}:' | grep 'image:' | awk '{print \$2}'",
-                            returnStdout: true
-                        ).trim()
-                        
-                        echo "Source image from compose: '${sourceImage}'"
-                        
-                        def imageNameOnly = sourceImage.split('/').last()
-                        def targetImage = "${REGISTRY}/${imageNameOnly}-${env.BUILD_NUMBER}"
-                        
-                        echo "Calculated target image: '${targetImage}'"
-                        
-                        def imageId = sh(
-                            script: "docker images -q ${sourceImage}",
-                            returnStdout: true
-                        ).trim()
-                        
-                        if (!imageId) {
-                            echo "WARNING: Source image not found! Listing available images:"
-                            sh 'docker images'
-                            error "Source image ${sourceImage} not found in local registry!"
-                        }
-                        
-                        sh """
-                        docker tag ${sourceImage} ${targetImage}
-                        """
-                        
-                        /*
-                        sh """
-                        docker push ${targetImage}
-                        """
-                        */
+                    def imageNameOnly = sourceImage.split('/').last()
+                    def targetImage = "${REGISTRY}/${imageNameOnly}-${env.BUILD_NUMBER}"
+                    
+                    echo "Calculated target image: '${targetImage}'"
+                    
+                    def imageId = sh(
+                        script: "docker images -q ${sourceImage}",
+                        returnStdout: true
+                    ).trim()
+                    
+                    if (!imageId) {
+                        echo "WARNING: Source image not found! Listing available images:"
+                        sh 'docker images'
+                        error "Source image ${sourceImage} not found in local registry!"
                     }
+                    
+                    sh """
+                    docker tag ${sourceImage} ${targetImage}
+                    """
+                    
+                    /*
+                    sh """
+                    docker push ${targetImage}
+                    """
+                    */
                 }
             }
         }
-        
-        stage('Cleanup Gateway Containers') {
-            steps {
-                echo "Stopping gateway containers"
-                sh 'docker stop $(docker ps -q) || true'
-            }
+    }
+    
+    stage('Cleanup Gateway Containers') {
+        steps {
+            echo "Stopping gateway containers"
+            sh 'docker stop $(docker ps -q) || true'
         }
     }
 }
