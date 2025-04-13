@@ -16,6 +16,7 @@ services:
       dockerfile: Dockerfile
     env_file:
       - .env
+    image: auth-service:v1
     environment:     
       - REDIS_URL=redis://redis:6379/0
       - SERVICE_NAME=auth-service

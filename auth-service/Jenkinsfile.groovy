@@ -14,6 +14,7 @@ def call(Map params) {
 
         echo "${env.WORKSPACE}/auth-service/${COMPOSE_FILE}"
         sh "echo \"CONSUL_HOST=${env.CONSUL_IP}\" >> ${env.WORKSPACE}/auth-service/.env"
+        sh "echo \"CONSUL_PORT=8500\" >> ${env.WORKSPACE}/auth-service/.env"
         sh "cat ${env.WORKSPACE}/auth-service/.env"
         sh "docker compose -f ${env.WORKSPACE}/auth-service/${COMPOSE_FILE} up -d --build"
     }
