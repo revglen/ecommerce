@@ -22,20 +22,20 @@ services:
       - CONSUL_HOST=${CONSUL_HOST}
       - CONSUL_PORT=${CONSUL_PORT}
     
-  # grafana:
-  #   image: grafana/grafana
-  #   ports:
-  #     - "3000:3000"
-  #   networks:
-  #     - observe-network
-  #   volumes:
-  #     - ./grafana/provisioning:/etc/grafana/provisioning
-  #     - grafana-storage:/var/lib/grafana
-  #   depends_on:
-  #     - prometheus
-  #   environment:
-  #     - GF_SECURITY_ADMIN_PASSWORD=admin  # Change in production!
-  #     - GF_USERS_ALLOW_SIGN_UP=false
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - observe-network
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - grafana-storage:/var/lib/grafana
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin  # Change in production!
+      - GF_USERS_ALLOW_SIGN_UP=false
 
 # Define networks and volumes
 networks:
