@@ -53,6 +53,8 @@ def call(Map params) {
                 script: "docker compose -f ${env.WORKSPACE}/order-service/${COMPOSE_FILE} config | grep 'image:' | grep -A5 '${service}' | awk '{print \$2}'",
                 returnStdout: true
             ).trim()
+
+            echo -e "'${sourceImage}'" | head -n 1
             
             echo "Source image from compose: '${sourceImage}'"
             
