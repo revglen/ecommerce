@@ -54,25 +54,24 @@ def call(Map params) {
                 returnStdout: true
             ).trim()
 
-            def sourceImage1 = sourceImage.readLines()[0]
-            echo "First line of source image from compose: '${sourceImage1}'"
-            
             echo "Source image from compose: '${sourceImage}'"
+            def sourceImage1 = sourceImage.readLines()[0]
+            echo "First line of source image from compose: '${sourceImage1}'"           
             
-            def imageNameOnly = sourceImage.split('/').last()
+            def imageNameOnly = sourceImage1.split('/').last()
             def targetImage = "${REGISTRY}/${imageNameOnly}-${env.BUILD_NUMBER}"
             
             echo "Calculated target image: '${targetImage}'"
             
             def imageId = sh(
-                script: "docker images -q ${sourceImage}",
+                script: "docker images -q ${sourceImage1}",
                 returnStdout: true
             ).trim()
             
             if (!imageId) {
                 echo "WARNING: Source image not found! Listing available images:"
                 sh 'docker images'
-                error "Source image ${sourceImage} not found in local registry!"
+                error "Source image ${sourceImage1} not found in local registry!"
             }
             
             sh """
