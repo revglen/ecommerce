@@ -8,6 +8,7 @@ def call(Map params) {
     env.CONSUL_IP = params.consulIP
     env.WORKSPACE = params.workspace
     env.GOOGLE_CREDENTIALS = params.google_credentials
+    env.TF_VAR_project_id = params.gcpProject
 
     // ✅ Use 'def' for local vars to avoid Groovy warnings
     def GATEWAY_VM_NAME = 'api-gateway'
@@ -27,7 +28,7 @@ def call(Map params) {
         sh 'terraform init'
         sh 'terraform plan -out=tfplan'
         sh 'terraform show tfplan'
-        
+
         //sh 'terraform apply -auto-approve'
         //def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
     }
