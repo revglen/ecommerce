@@ -25,7 +25,9 @@ def call(Map params) {
 
     stage('Call Terraform and create a VM in GCP') { 
         sh 'terraform init'
-        sh 'terraform path'
+        sh 'terraform plan -out=tfplan'
+        sh 'terraform show tfplan'
+        
         //sh 'terraform apply -auto-approve'
         //def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
     }
