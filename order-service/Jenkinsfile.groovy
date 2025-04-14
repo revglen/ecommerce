@@ -54,7 +54,7 @@ def call(Map params) {
                 returnStdout: true
             ).trim()
 
-            echo -e "'${sourceImage}'" | head -n 1
+            echo -e "${sourceImage}" | head -n 1
             
             echo "Source image from compose: '${sourceImage}'"
             
