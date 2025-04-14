@@ -7,6 +7,7 @@ def call(Map params) {
     env.REGISTRY = params.registry
     env.CONSUL_IP = params.consulIP
     env.WORKSPACE = params.workspace
+    env.GOOGLE_CREDENTIALS = params.google_credentials
 
     // ✅ Use 'def' for local vars to avoid Groovy warnings
     def GATEWAY_VM_NAME = 'api-gateway'
@@ -20,6 +21,13 @@ def call(Map params) {
         sh "echo \"CONSUL_IP=${env.CONSUL_IP}\" >> ${env.WORKSPACE}/gateway-service/.env"
         sh "cat ${env.WORKSPACE}/gateway-service/.env"
         sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
+    }
+
+    stage('Call Terraform and create a VM in GCP') { 
+        sh 'terraform init'
+        sh 'terraform path'
+        //sh 'terraform apply -auto-approve'
+        //def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
     }
     
     stage('Tag and Push Gateway Images') {
