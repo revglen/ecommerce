@@ -75,7 +75,7 @@ def call(Map params) {
             }
             
             sh """
-            docker tag ${sourceImage} ${targetImage}
+            docker tag ${sourceImage1} ${targetImage}
             """
             
             //sh """
