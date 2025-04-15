@@ -76,13 +76,15 @@ def call(Map params) {
                 echo "Loaded into the GCP VM"
             """   
 
+            def imageName=${sourceImage}.split(':')[0]
+
             // Retry mechanism for SSH
             retry(3) {
                 sh """
                     scp -o StrictHostKeyChecking=no \
                         -o ConnectTimeout=30 \
                         -i /var/lib/jenkins/.ssh/id_rsa \
-                        ${sourceImage}.tar ubuntu@${IP}:/home/ubuntu/
+                        ${imageName}.tar ubuntu@${IP}:/home/ubuntu/
                     echo "Completed the upload of the docker tar ball"
                 """
             }
@@ -92,7 +94,7 @@ def call(Map params) {
                 ssh -o StrictHostKeyChecking=no \
                     -i ${env.SSH_KEY} \
                     ubuntu@${IP} \
-                    'docker load -i /home/${ubuntu}/${sourceImage} && \
+                    'docker load -i /home/${ubuntu}/${imageName} && \
                      docker run -d -p 80:80 my-app:latest'
             """
                               
