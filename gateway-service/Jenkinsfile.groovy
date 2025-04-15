@@ -59,28 +59,23 @@ def call(Map params) {
                                           
             // Save the Docker image as a tar file
             sh """
-                docker save ${sourceImage} -o ${sourceImage}.tar
-                echo "The docker saved to ${sourceImage}"
+                docker save ${sourceImage} -o ${service}.tar
+                echo "The docker saved to ${service}.tar"
             """
 
             def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
 
             // Copy the Docker image to the GCP VM
             sh """                
-                scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${sourceImage} ubuntu@${IP}:/home/ubuntu/
+                scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service} ubuntu@${IP}:/home/ubuntu/
                 echo "Copied to GCP VM"
             """
             
             // // SSH into the VM and load the Docker image
             sh """
-                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${sourceImage}'
+                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}'
                 echo "Loaded into the GCP VM"
             """   
-
-            def imageName = sourceImage.split(':')[0]
-            sh """
-                echo "The image name is ${imageName}"
-            """
 
             // Retry mechanism for SSH
             retry(3) {
