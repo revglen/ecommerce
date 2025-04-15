@@ -21,10 +21,10 @@ def call(Map params) {
         
 
         sh 'terraform init'
-        /*sh 'terraform plan -out=tfplan'
-        sh 'terraform show tfplan'*/
+        sh 'terraform plan -out=tfplan'
+        sh 'terraform show tfplan'
 
-        sh 'terraform apply -auto-approve'
+        //sh 'terraform apply -auto-approve'
         def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
         
         //Generate the keys
