@@ -9,9 +9,7 @@ def call(Map params) {
     env.TF_VAR_project_id = params.gcpProject
     env.SSH_KEY=params.ssh_key
     env.SSH_PUB_KEY=params.ssh_pub_key
-    env.PORTS=params.ports
-    env.GATEWAY_PORTS = params.ports
-
+    
     def COMPOSE_FILE = 'docker-compose.yml'
     def CONSUL_IP = ''
     

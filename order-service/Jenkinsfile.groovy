@@ -98,9 +98,16 @@ def call(Map params) {
             }
             
             //Execute remote commands
-            sh """
-                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'ddocker run -d ${env.env.PORTS} ${sourceImage}'
-            """                       
+            if (service == 'postgres') {
+                sh """
+                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker run -d -p 5432:5432 ${sourceImage}'
+                """
+            }
+            else {
+                sh """
+                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker run -d -p 8001:8001 ${sourceImage}'
+                """
+            }                     
         }
     }      
 }

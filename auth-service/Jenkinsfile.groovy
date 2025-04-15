@@ -11,8 +11,7 @@ def call(Map params) {
     env.SSH_PUB_KEY=params.ssh_pub_key
     env.PORTS=params.ports
     env.CONSUL_IP=params.consul_ip
-    env.AUTHENICATION_PORTS=params.ports
-
+    
     def COMPOSE_FILE = 'docker-compose.yml'     
     
     stage('Call Terraform and create a VM in GCP') {         
@@ -81,16 +80,9 @@ def call(Map params) {
             }
             
             //Execute remote commands
-            if (service == 'postgres') {
-                sh """
-                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker run -d -p 5432:5432 ${sourceImage}'
-                """ 
-            }
-            else {
-                sh """
-                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker run -d -p 8002:8002 ${sourceImage}'
-                """ 
-            }                 
+            sh """
+                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker run -d -p 8002 ${sourceImage}'
+            """                       
         }
     }      
 }
