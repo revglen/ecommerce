@@ -76,29 +76,33 @@ def call(Map params) {
                     echo "Copied to GCP VM"
                 """
             }
+
+            // Wait for port 22 to be open
+            sh """
+                for i in {1..10}; do
+                    nc -z ${IP} 22 && break
+                    echo "Waiting for SSH..."
+                    sleep 5
+                done
+            """
+
+            def port = ""
+            if (service == 'api-gateway') {
+                port = "-p 80:80 -p 443:443"
+            }
+            else {
+                port = "-p 8300:8300 -p 8301:8301/tcp -p 8301:8301/udp -p 8500:8500 -p 8600:8600/tcp -p 8600:8600/udp"
+            }
             
             // SSH into the VM and load the Docker image
             retry(3) {
                 sh """
-                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}.tar'
-                    echo "Loaded into the GCP VM"
+                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} '
+                        docker load -i /home/ubuntu/${service}.tar && docker run -d ${port} ${sourceImage}'
+                    
                 """   
-            }
+            }           
             
-            //Execute remote commands
-            if (service == 'api-gateway') {
-                sh """
-                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker run -d -p 80:80 -p 443:443 ${sourceImage}'
-                """
-            }
-            else {
-                sh """
-                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker run -d -p 8300:8300 -p 8301:8301/tcp -p 8301:8301/udp -p 8500:8500 -p 8600:8600/tcp -p 8600:8600/udp
-
- ${sourceImage}'
-                """
-            }
-
             sh """            
                 rm -rf ${service}.tar
                 echo "Deleted the tar file ${service}.tar"
