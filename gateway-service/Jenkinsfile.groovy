@@ -71,8 +71,8 @@ def call(Map params) {
                                
             // Save the Docker image as a tar file
             sh """
-                docker save ${targetImage} -o '${targetImage}.tar'
-                ehco "The docker saved to ${targetImage}.tar"
+                docker save ${targetImage} -o temp.tar
+                ehco "The docker saved to $temp.tar"
             """
 
             // Copy the Docker image to the GCP VM
