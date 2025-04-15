@@ -24,14 +24,10 @@ def call(Map params) {
         //sh 'terraform plan -out=tfplan'
         //sh 'terraform show tfplan'
 
-        // sh """
-        //     terraform apply -auto-approve \
-        //         -var="ssh_public_key=${env.SSH_PUB_KEY}" \
-        //         -var="project_id=${env.TF_VAR_project_id}"
-        // """
-
         sh """
-            terraform apply -auto-approve
+            terraform apply -auto-approve \
+                -var="ssh_public_key=${env.SSH_PUB_KEY}" \
+                -var="project_id=${env.TF_VAR_project_id}"
         """
 
         def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
