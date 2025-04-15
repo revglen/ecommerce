@@ -10,6 +10,7 @@ def call(Map params) {
     env.GOOGLE_CREDENTIALS = params.google_credentials
     env.TF_VAR_project_id = params.gcpProject
     env.SSH_KEY=params.ssh_key
+    env.SSH_PUB_KEY=params.ssh_pub_key
 
     // ✅ Use 'def' for local vars to avoid Groovy warnings
     def GATEWAY_VM_NAME = 'api-gateway'
@@ -17,25 +18,19 @@ def call(Map params) {
     def COMPOSE_FILE = 'docker-compose.yml'    
     
     
-    stage('Call Terraform and create a VM in GCP') {       
-        
+    stage('Call Terraform and create a VM in GCP') {         
 
         sh 'terraform init'
         sh 'terraform plan -out=tfplan'
         sh 'terraform show tfplan'
 
-        //sh 'terraform apply -auto-approve'
+        // sh """
+        //     terraform apply -auto-approve \
+        //         -var="ssh_public_key=${env.SSH_PUB_KEY}" \
+        //         -var="project_id=${env.TF_VAR_project_id}"
+        // """
+
         def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
-        
-        //Generate the keys
-        sh """
-            mkdir -p ~/.ssh
-            cp ${SSH_KEY} ~/.ssh/id_rsa         // Copies the key to Jenkins' .ssh
-            chmod 600 ~/.ssh/id_rsa             // Sets strict permissions       
-        """
-
-        sh "ls -la ~/.ssh/id_rsa"
-
         sh "echo \"CONSUL_IP=${IP}\" > ${env.WORKSPACE}/gateway-service/.env"
         sh "cat ${env.WORKSPACE}/gateway-service/.env"
         sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
@@ -71,13 +66,13 @@ def call(Map params) {
 
             // Copy the Docker image to the GCP VM
             sh """                
-                scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${sourceImage} ubuntu@${IP}:/home/ubuntu/
+                scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${sourceImage} ubuntu@${IP}:/home/ubuntu/
                 echo "Copied to GCP VM"
             """
             
             // // SSH into the VM and load the Docker image
             sh """
-                ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${IP} 'docker load -i /home/ubuntu/${sourceImage}'
+                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${sourceImage}'
                 echo "Loaded into the GCP VM"
             """   
 
@@ -94,7 +89,7 @@ def call(Map params) {
             // Execute remote commands
             sh """
                 ssh -o StrictHostKeyChecking=no \
-                    -i /var/lib/jenkins/.ssh/id_rsa \
+                    -i ${env.SSH_KEY} \
                     ubuntu@${IP} \
                     'docker load -i /home/${ubuntu}/${sourceImage} && \
                      docker run -d -p 80:80 my-app:latest'

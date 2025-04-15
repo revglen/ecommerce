@@ -43,7 +43,7 @@ resource "google_compute_instance" "docker_vm" {
 
   metadata = {
     //ssh-keys = "${var.vm_username}:${tls_private_key.vm_ssh.public_key_openssh}"
-    ssh-keys = "ubuntu:${file("~/.ssh/jenkins_gcp_rsa.pub")}"
+     ssh-keys = "ubuntu:${var.ssh_public_key}"
   }
 
   metadata_startup_script = <<-EOF

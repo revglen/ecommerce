@@ -28,7 +28,7 @@ variable "vm_username" {
 }
 
 variable "ssh_public_key" {
-  description = "Path to the SSH public key"
+  description = "SSH public key content"
   type        = string
-  default     = "~/.ssh/id_rsa.pub"
+  sensitive   = true  # Marks the variable as sensitive
 }
