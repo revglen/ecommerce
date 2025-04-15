@@ -26,6 +26,8 @@ def call(Map params) {
                 -var="project_id=${env.TF_VAR_project_id}"
         """
 
+        sleep(3)
+        
         def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
         sh "ssh-keygen -R ${IP} || true"
         sh "echo \"CONSUL_HOST=${env.CONSUL_IP}\" > ${env.WORKSPACE}/order-service/.env"
