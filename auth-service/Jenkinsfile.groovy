@@ -11,6 +11,7 @@ def call(Map params) {
     env.SSH_PUB_KEY=params.ssh_pub_key
     env.PORTS=params.ports
     env.CONSUL_IP=params.consul_ip
+    env.AUTHENICATION_PORTS=params.ports
 
     def COMPOSE_FILE = 'docker-compose.yml'     
     
@@ -81,7 +82,7 @@ def call(Map params) {
             
             //Execute remote commands
             sh """
-                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'ddocker run -d ${env.env.PORTS} ${sourceImage}'
+                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'ddocker run -d ${eenv.AUTHENICATION_PORTS} ${sourceImage}'
             """                       
         }
     }      
