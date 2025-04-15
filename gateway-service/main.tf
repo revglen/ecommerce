@@ -3,16 +3,34 @@ provider "google" {
   region  = var.region
 }
 
+# Generate secure SSH key pair
+resource "tls_private_key" "vm_ssh" {
+  algorithm = "ED25519"  # More secure than RSA
+  rsa_bits  = 4096      # Only used if algorithm were RSA
+}
+
+# Save private key securely (not in state file)
+resource "local_sensitive_file" "private_key" {
+  filename        = "${path.module}/.ssh/gcp_vm_key"
+  content         = tls_private_key.vm_ssh.private_key_openssh
+  file_permission = "0600"  # Owner read/write only
+}
+
+# Save public key (optional)
+resource "local_file" "public_key" {
+  filename        = "${path.module}/.ssh/gcp_vm_key.pub"
+  content         = tls_private_key.vm_ssh.public_key_openssh
+  file_permission = "0644"
+}
+
 resource "google_compute_instance" "docker_vm" {
-  name         = "gateway-vm"
+  name         = "docker-vm"
   machine_type = var.machine_type
   zone         = var.zone
 
   boot_disk {
     initialize_params {
       image = "ubuntu-os-cloud/ubuntu-2204-lts"
-      size   = 20
-      type   = "pd-balanced"
     }
   }
 
@@ -23,33 +41,34 @@ resource "google_compute_instance" "docker_vm" {
     }
   }
 
+  metadata = {
+    ssh-keys = "${var.vm_username}:${tls_private_key.vm_ssh.public_key_openssh}"
+  }
+
   metadata_startup_script = <<-EOF
     #!/bin/bash
-    # Install Docker
+    # Docker installation script
     sudo apt-get update
     sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     sudo apt-get update
-    sudo apt-get install -y docker-ce
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
     sudo usermod -aG docker ${var.vm_username}
-    
-    # Install Docker Compose
-    sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-    
-    # Enable Docker service
-    sudo systemctl enable docker
-    sudo systemctl start docker
   EOF
 
-  tags = ["http-server", "https-server","docker-host"]
-
-  metadata = {
-    ssh-keys = "${var.vm_username}:${file(var.ssh_public_key)}"
-  }
+  tags = ["docker-host"]
 }
 
-# output "instance_ip" {
-#   value = google_compute_instance.docker_vm.network_interface[0].access_config[0].nat_ip
-# }
+output "instance_ip" {
+  value = google_compute_instance.docker_vm.network_interface[0].access_config[0].nat_ip
+}
+
+output "ssh_private_key" {
+  value     = tls_private_key.vm_ssh.private_key_openssh
+  sensitive = true
+}
+
+output "ssh_command" {
+  value = "ssh -i .ssh/gcp_vm_key ${var.vm_username}@${google_compute_instance.docker_vm.network_interface[0].access_config[0].nat_ip}"
+}
