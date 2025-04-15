@@ -21,9 +21,9 @@ def call(Map params) {
         /*sh 'terraform plan -out=tfplan'
         sh 'terraform show tfplan'*/
 
-        //sh 'terraform apply -auto-approve'
-        //def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
-        def IP = "1.2.3.4"
+        sh 'terraform apply -auto-approve'
+        def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+        //def IP = "1.2.3.4"
         sh "echo \"CONSUL_IP=${IP}\" > ${env.WORKSPACE}/gateway-service/.env"
         sh "cat ${env.WORKSPACE}/gateway-service/.env"
         sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
@@ -76,14 +76,21 @@ def call(Map params) {
             """
 
             // Copy the Docker image to the GCP VM
-            // sh """
-            //     scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${targetImage}.tar ubuntu@${env.INSTANCE_IP}:/home/ubuntu/
-            // """
+            sh """
+                scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${targetImage}.tar ubuntu@${IP}:/home/ubuntu/
+                echo "Copied to GCP VM"
+            """
             
             // // SSH into the VM and load the Docker image
-            // sh """
-            //     ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${env.INSTANCE_IP} 'docker load -i /home/ubuntu/${targetImage}.tar'
-            // """                    
+            sh """
+                ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${IP} 'docker load -i /home/ubuntu/temp.tar'
+                echo "Loaded into the GCP VM"
+            """   
+
+            sh """
+                rm -rf temp.tar
+                echo "Deleted the tar file"
+            """                     
         }
     }
     
