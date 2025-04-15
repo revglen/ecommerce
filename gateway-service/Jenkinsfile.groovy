@@ -60,32 +60,6 @@ def call(Map params) {
 
             def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
 
-            // Wait for port 22 to be open
-            sh """
-                for i in {1..10}; do
-                    nc -z ${IP} 22 && break
-                    echo "Waiting for SSH..."
-                    sleep 5
-                done
-            """
-
-            // Copy the Docker image to the GCP VM
-            retry(3) {
-                sh """                
-                    scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service}.tar ubuntu@${IP}:/home/ubuntu/
-                    echo "Copied to GCP VM"
-                """
-            }
-
-            // Wait for port 22 to be open
-            sh """
-                for i in {1..10}; do
-                    nc -z ${IP} 22 && break
-                    echo "Waiting for SSH..."
-                    sleep 5
-                done
-            """
-
             def port = ""
             if (service == 'api-gateway') {
                 port = "-p 80:80 -p 443:443"
@@ -94,14 +68,35 @@ def call(Map params) {
                 port = "-p 8300:8300 -p 8301:8301/tcp -p 8301:8301/udp -p 8500:8500 -p 8600:8600/tcp -p 8600:8600/udp"
             }
             
-            // SSH into the VM and load the Docker image
-            retry(3) {
-                sh """
-                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} '
-                        docker load -i /home/ubuntu/${service}.tar && docker run -d ${port} ${sourceImage}'
-                    
-                """   
-            }           
+            // Wait for port 22 to be open
+            sh """
+                for i in {1..10}; do
+                    if nc -z ${IP} 22; then
+                        echo "Port 22 is open"
+                        scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service}.tar ubuntu@${IP}:/home/ubuntu/
+                        echo "Copied to GCP VM"
+                        break
+                    else
+                        echo "Waiting for SSH..."
+                        sleep 5
+                    fi                   
+                done
+            """
+
+            // Wait for port 22 to be open
+            sh """
+                for i in {1..10}; do
+                    if nc -z ${IP} 22; then
+                        echo "Port 22 is open"
+                         ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}.tar && docker run -d ${port} ${sourceImage}'
+                        echo "Copied to GCP VM"
+                        break
+                    else
+                        echo "Waiting for SSH..."
+                        sleep 5
+                    fi                   
+                done
+            """       
             
             sh """            
                 rm -rf ${service}.tar

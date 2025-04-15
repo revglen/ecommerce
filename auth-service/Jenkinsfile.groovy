@@ -66,32 +66,37 @@ def call(Map params) {
             // Wait for port 22 to be open
             sh """
                 for i in {1..10}; do
-                    nc -z ${IP} 22 && break
-                    echo "Waiting for SSH..."
-                    sleep 5
+                    if nc -z ${IP} 22; then
+                        echo "Port 22 is open"
+                        scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service}.tar ubuntu@${IP}:/home/ubuntu/
+                        echo "Copied to GCP VM"
+                        break
+                    else
+                        echo "Waiting for SSH..."
+                        sleep 5
+                    fi                   
                 done
             """
 
-            // Copy the Docker image to the GCP VM
-            retry(3) {
-                sh """                
-                    scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service}.tar ubuntu@${IP}:/home/ubuntu/
-                    echo "Copied to GCP VM"
-                """
-            }
-            
-            // SSH into the VM and load the Docker image
-            retry(3) {
-                sh """
-                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}.tar'
-                    echo "Loaded into the GCP VM"
-                """   
-            }
-            
-            //Execute remote commands
+            // Wait for port 22 to be open
             sh """
-                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker run -d -p 8002 ${sourceImage}'
-            """                       
+                for i in {1..10}; do
+                    if nc -z ${IP} 22; then
+                        echo "Port 22 is open"
+                         ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}.tar && docker run -d -p 8002 ${sourceImage}'
+                        echo "Copied to GCP VM"
+                        break
+                    else
+                        echo "Waiting for SSH..."
+                        sleep 5
+                    fi                   
+                done
+            """
+            
+            sh """            
+                rm -rf ${service}.tar
+                echo "Deleted the tar file ${service}.tar"
+            """                                
         }
     }      
 }
