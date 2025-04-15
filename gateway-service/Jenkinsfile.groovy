@@ -24,13 +24,18 @@ def call(Map params) {
         //sh 'terraform plan -out=tfplan'
         //sh 'terraform show tfplan'
 
+        // sh """
+        //     terraform apply -auto-approve \
+        //         -var="ssh_public_key=${env.SSH_PUB_KEY}" \
+        //         -var="project_id=${env.TF_VAR_project_id}"
+        // """
+
         sh """
-            terraform apply -auto-approve \
-                -var="ssh_public_key=${env.SSH_PUB_KEY}" \
-                -var="project_id=${env.TF_VAR_project_id}"
+            terraform apply -auto-approve
         """
 
         def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+        sh "ssh-keygen -R ${IP} || true"
         sh "echo \"CONSUL_IP=${IP}\" > ${env.WORKSPACE}/gateway-service/.env"
         sh "cat ${env.WORKSPACE}/gateway-service/.env"
         sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
@@ -90,13 +95,13 @@ def call(Map params) {
             }
             
             // Execute remote commands
-            sh """
-                ssh -o StrictHostKeyChecking=no \
-                    -i ${env.SSH_KEY} \
-                    ubuntu@${IP} \
-                    'docker load -i /home/${ubuntu}/${imageName} && \
-                     docker run -d -p 80:80 my-app:latest'
-            """
+            // sh """
+            //     ssh -o StrictHostKeyChecking=no \
+            //         -i ${env.SSH_KEY} \
+            //         ubuntu@${IP} \
+            //         'docker load -i /home/${ubuntu}/${imageName} && \
+            //          docker run -d -p 80:80 my-app:latest'
+            // """
                               
         }
     }
