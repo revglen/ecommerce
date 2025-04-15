@@ -82,7 +82,7 @@ def call(Map params) {
             
             //Execute remote commands
             sh """
-                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'ddocker run -d ${eenv.AUTHENICATION_PORTS} ${sourceImage}'
+                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker run -d ${eenv.AUTHENICATION_PORTS} ${sourceImage}'
             """                       
         }
     }      

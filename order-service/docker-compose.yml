@@ -43,7 +43,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DB_HOST: postgres  # Uses the service name as hostname
+      DB_HOST: ${EXTERNAL_HOST_IP}  # Uses the service name as hostname
       DB_PORT: 5432
       DB_NAME: order_db
       DB_USER: order_user
