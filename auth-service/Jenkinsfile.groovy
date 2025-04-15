@@ -83,7 +83,7 @@ def call(Map params) {
                 for i in {1..10}; do
                     if nc -z ${IP} 22; then
                         echo "Port 22 is open"
-                         ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}.tar && docker run -d -p 8002 ${sourceImage}'
+                         ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}.tar && docker run -d ${port} ${sourceImage}'
                         echo "Copied to GCP VM"
                         break
                     else
