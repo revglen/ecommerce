@@ -5,7 +5,7 @@ events {
 http {
 
 	#resolver $CONSUL_IP valid=10s;	
-	resolver consul-server:8600 valid=5s;
+	resolver $CONSUL_IP:8600 valid=5s;
 
     server {
         listen 80;

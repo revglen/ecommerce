@@ -80,7 +80,7 @@ def call(Map params) {
             
             //Execute remote commands
             sh """
-                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'ddocker run -d ${env.env.PORTS} ${sourceImage}'
+                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'ddocker run -d ${env.GATEWAY_PORTS} ${sourceImage}'
             """
 
             sh """            
