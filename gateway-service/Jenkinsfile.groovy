@@ -77,7 +77,10 @@ def call(Map params) {
                 echo "Loaded into the GCP VM"
             """   
 
-            def imageName=${sourceImage}.split(':')[0]
+            def imageName = sourceImage.split(':')[0]
+            sh """
+                echo "The image name is ${imageName}"
+            """
 
             // Retry mechanism for SSH
             retry(3) {
