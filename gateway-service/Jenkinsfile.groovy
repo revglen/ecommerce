@@ -68,9 +68,19 @@ def call(Map params) {
             docker tag ${sourceImage} ${targetImage}
             """
             
-            //sh """
-            //docker push ${targetImage}
-            //"""
+            //Push the image to gcp
+            // Build your Docker image
+            //sh 'docker build -t my-app:latest .'
+            
+            // Save the Docker image as a tar file
+            //sh 'docker save my-app:latest -o my-app.tar'
+            
+            // Copy the Docker image to the GCP VM
+            //sh "scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa my-app.tar ubuntu@${env.INSTANCE_IP}:/home/ubuntu/"
+            
+            // SSH into the VM and load the Docker image
+            //sh "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${env.INSTANCE_IP} 'docker load -i /home/ubuntu/my-app.tar'"
+                    
         }
     }
     
