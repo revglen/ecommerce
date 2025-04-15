@@ -81,7 +81,7 @@ def call(Map params) {
             //Execute remote commands
             if (service == 'api-gateway') {
                 sh """
-                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker run -d -o 80:80 -p 443:443 ${sourceImage}'
+                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker run -d -p 80:80 -p 443:443 ${sourceImage}'
                 """
             }
             else {
