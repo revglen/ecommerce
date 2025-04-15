@@ -81,6 +81,15 @@ def call(Map params) {
 
             def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
 
+            // Wait for port 22 to be open
+            sh """
+                for i in {1..10}; do
+                    nc -z ${IP} 22 && break
+                    echo "Waiting for SSH..."
+                    sleep 5
+                done
+            """
+
             // Copy the Docker image to the GCP VM
             retry(3) {
                 sh """                
