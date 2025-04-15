@@ -9,6 +9,7 @@ def call(Map params) {
     env.WORKSPACE = params.workspace
     env.GOOGLE_CREDENTIALS = params.google_credentials
     env.TF_VAR_project_id = params.gcpProject
+    env.SSH_KEY=params.ssh_key
 
     // ✅ Use 'def' for local vars to avoid Groovy warnings
     def GATEWAY_VM_NAME = 'api-gateway'
@@ -16,18 +17,8 @@ def call(Map params) {
     def COMPOSE_FILE = 'docker-compose.yml'    
     
     
-    stage('Call Terraform and create a VM in GCP') { 
-        //Generate the keys
-        sh """
-            mkdir -p /var/lib/jenkins/.ssh
-            chmod 700 /var/lib/jenkins/.ssh
-            ssh-keygen -t rsa -b 4096 -f /var/lib/jenkins/.ssh/id_rsa -N ''
-            
-            withCredentials([file(credentialsId: 'gcp-ssh-key', variable: 'SSH_KEY')]) {
-                sh 'cp $SSH_KEY /var/lib/jenkins/.ssh/id_rsa'
-                sh 'chmod 600 /var/lib/jenkins/.ssh/id_rsa'
-            }
-        """
+    stage('Call Terraform and create a VM in GCP') {       
+        
 
         sh 'terraform init'
         /*sh 'terraform plan -out=tfplan'
@@ -35,7 +26,16 @@ def call(Map params) {
 
         sh 'terraform apply -auto-approve'
         def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
-        //def IP = "1.2.3.4"
+        
+        //Generate the keys
+        sh """
+            mkdir -p ~/.ssh
+            cp ${SSH_KEY} ~/.ssh/id_rsa         // Copies the key to Jenkins' .ssh
+            chmod 600 ~/.ssh/id_rsa             // Sets strict permissions       
+        """
+
+        sh "ls -la ~/.ssh/id_rsa"
+
         sh "echo \"CONSUL_IP=${IP}\" > ${env.WORKSPACE}/gateway-service/.env"
         sh "cat ${env.WORKSPACE}/gateway-service/.env"
         sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
@@ -70,7 +70,7 @@ def call(Map params) {
             def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
 
             // Copy the Docker image to the GCP VM
-            sh """
+            sh """                
                 scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${sourceImage} ubuntu@${IP}:/home/ubuntu/
                 echo "Copied to GCP VM"
             """
