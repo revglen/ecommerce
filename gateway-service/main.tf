@@ -55,6 +55,10 @@ resource "google_compute_instance" "docker_vm" {
     sudo apt-get update
     sudo apt-get install -y docker-ce docker-ce-cli containerd.io
     sudo usermod -aG docker ${var.vm_username}
+    sudo systemctl status ssh
+    sudo apt install ufw -y
+    sudo ufw enable
+    sudo ufw allow 22/tcp
   EOF
 
   tags = ["docker-host"]
