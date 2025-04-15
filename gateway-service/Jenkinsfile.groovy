@@ -67,7 +67,7 @@ def call(Map params) {
 
             // Copy the Docker image to the GCP VM
             sh """                
-                scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service} ubuntu@${IP}:/home/ubuntu/
+                scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service}.tar ubuntu@${IP}:/home/ubuntu/
                 echo "Copied to GCP VM"
             """
             
