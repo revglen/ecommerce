@@ -101,7 +101,11 @@ def call(Map params) {
             //         'docker load -i /home/${ubuntu}/${imageName} && \
             //          docker run -d -p 80:80 my-app:latest'
             // """
-                              
+
+            sh """            
+                rm -rf ${sourceImage}
+                echo "Deleted the tar file ${sourceImage}.tar"
+            """                               
         }
     }
     
@@ -110,7 +114,7 @@ def call(Map params) {
         sh 'docker stop $(docker ps -q) || true'
 
         sh """
-            rm -rf /var/lib/jenkins/.ssh
+            
             rm -rf ${sourceImage}
             echo "Deleted the tar file"
         """   
