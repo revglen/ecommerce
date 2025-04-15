@@ -42,7 +42,8 @@ resource "google_compute_instance" "docker_vm" {
   }
 
   metadata = {
-    ssh-keys = "${var.vm_username}:${tls_private_key.vm_ssh.public_key_openssh}"
+    //ssh-keys = "${var.vm_username}:${tls_private_key.vm_ssh.public_key_openssh}"
+    ssh-keys = "${var.vm_username}:${file("/var/lib/jenkins/.ssh/id_rsa.pub")}"
   }
 
   metadata_startup_script = <<-EOF

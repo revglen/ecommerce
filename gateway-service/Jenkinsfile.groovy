@@ -17,6 +17,18 @@ def call(Map params) {
     
     
     stage('Call Terraform and create a VM in GCP') { 
+        //Generate the keys
+        sh """
+            mkdir -p /var/lib/jenkins/.ssh
+            chmod 700 /var/lib/jenkins/.ssh
+            ssh-keygen -t rsa -b 4096 -f /var/lib/jenkins/.ssh/id_rsa -N ''
+            
+            withCredentials([file(credentialsId: 'gcp-ssh-key', variable: 'SSH_KEY')]) {
+                sh 'cp $SSH_KEY /var/lib/jenkins/.ssh/id_rsa'
+                sh 'chmod 600 /var/lib/jenkins/.ssh/id_rsa'
+            }
+        """
+
         sh 'terraform init'
         /*sh 'terraform plan -out=tfplan'
         sh 'terraform show tfplan'*/
@@ -48,57 +60,58 @@ def call(Map params) {
             ).trim()
             
             echo "Source image from compose: '${sourceImage}'"
-            
-            def imageNameOnly = sourceImage.split('/').last()
-            def targetImage = "${REGISTRY}/${imageNameOnly}-${env.BUILD_NUMBER}"
-            
-            echo "Calculated target image: '${targetImage}'"
-            
-            def imageId = sh(
-                script: "docker images -q ${sourceImage}",
-                returnStdout: true
-            ).trim()
-            
-            if (!imageId) {
-                echo "WARNING: Source image not found! Listing available images:"
-                sh 'docker images'
-                error "Source image ${sourceImage} not found in local registry!"
-            }
-            
-            sh """
-                docker tag ${sourceImage} ${targetImage}
-            """
-                               
+                                          
             // Save the Docker image as a tar file
             sh """
-                docker save ${targetImage} -o temp.tar
-                echo "The docker saved to temp.tar"
+                docker save ${sourceImage} -o ${sourceImage}
+                echo "The docker saved to ${sourceImage}"
             """
 
             def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
 
             // Copy the Docker image to the GCP VM
             sh """
-                scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa temp.tar ubuntu@${IP}:/home/ubuntu/
+                scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${sourceImage} ubuntu@${IP}:/home/ubuntu/
                 echo "Copied to GCP VM"
             """
             
             // // SSH into the VM and load the Docker image
             sh """
-                ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${IP} 'docker load -i /home/ubuntu/temp.tar'
+                ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${IP} 'docker load -i /home/ubuntu/${sourceImage}'
                 echo "Loaded into the GCP VM"
             """   
 
+            // Retry mechanism for SSH
+            retry(3) {
+                sh """
+                    scp -o StrictHostKeyChecking=no \
+                        -o ConnectTimeout=30 \
+                        -i /var/lib/jenkins/.ssh/id_rsa \
+                        ${sourceImage} ubuntu@${IP}:/home/ubuntu/
+                """
+            }
+            
+            // Execute remote commands
             sh """
-                rm -rf temp.tar
-                echo "Deleted the tar file"
-            """                     
+                ssh -o StrictHostKeyChecking=no \
+                    -i /var/lib/jenkins/.ssh/id_rsa \
+                    ubuntu@${IP} \
+                    'docker load -i /home/${ubuntu}/${sourceImage} && \
+                     docker run -d -p 80:80 my-app:latest'
+            """
+                              
         }
     }
     
     stage('Cleanup Gateway Containers') {
         echo "Stopping gateway containers"
         sh 'docker stop $(docker ps -q) || true'
+
+        sh """
+            rm -rf /var/lib/jenkins/.ssh
+            rm -rf ${sourceImage}
+            echo "Deleted the tar file"
+        """   
     }
 }
 
