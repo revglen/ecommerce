@@ -75,6 +75,8 @@ def call(Map params) {
                 echo "The docker saved to temp.tar"
             """
 
+            def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+
             // Copy the Docker image to the GCP VM
             sh """
                 scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${targetImage}.tar ubuntu@${IP}:/home/ubuntu/
