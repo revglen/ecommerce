@@ -83,6 +83,7 @@ def call(Map params) {
                         -o ConnectTimeout=30 \
                         -i /var/lib/jenkins/.ssh/id_rsa \
                         ${sourceImage}.tar ubuntu@${IP}:/home/ubuntu/
+                    echo "Completed the upload of the docker tar ball"
                 """
             }
             
