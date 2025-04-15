@@ -17,12 +17,13 @@ def call(Map params) {
     
     
     stage('Call Terraform and create a VM in GCP') { 
-        sh 'terraform init'
+        /*sh 'terraform init'
         sh 'terraform plan -out=tfplan'
-        sh 'terraform show tfplan'
+        sh 'terraform show tfplan'*/
 
         sh 'terraform apply -auto-approve'
-        def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+        //def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+        def IP = "1.2.3.4"
         sh "echo \"CONSUL_IP=${IP}\" > ${env.WORKSPACE}/gateway-service/.env"
         sh "cat ${env.WORKSPACE}/gateway-service/.env"
         sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
@@ -65,18 +66,23 @@ def call(Map params) {
             }
             
             sh """
-            docker tag ${sourceImage} ${targetImage}
+                docker tag ${sourceImage} ${targetImage}
             """
                                
             // Save the Docker image as a tar file
-            sh 'docker save ${targetImage} -o ${targetImage}.tar'
-            
+            sh """
+                docker save ${targetImage} -o ${targetImage}.tar'
+            """
+
             // Copy the Docker image to the GCP VM
-            sh "scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${targetImage}.tar ubuntu@${env.INSTANCE_IP}:/home/ubuntu/"
+            // sh """
+            //     scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${targetImage}.tar ubuntu@${env.INSTANCE_IP}:/home/ubuntu/
+            // """
             
-            // SSH into the VM and load the Docker image
-            sh "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${env.INSTANCE_IP} 'docker load -i /home/ubuntu/${targetImage}.tar'"
-                    
+            // // SSH into the VM and load the Docker image
+            // sh """
+            //     ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${env.INSTANCE_IP} 'docker load -i /home/ubuntu/${targetImage}.tar'
+            // """                    
         }
     }
     
