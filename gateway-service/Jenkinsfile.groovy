@@ -16,21 +16,16 @@ def call(Map params) {
     def COMPOSE_FILE = 'docker-compose.yml'    
     
     
-    stage('Build Gateway Service') {        
-
-        echo "${env.WORKSPACE}/gateway-service/${COMPOSE_FILE}"
-        sh "echo \"CONSUL_IP=${env.CONSUL_IP}\" >> ${env.WORKSPACE}/gateway-service/.env"
-        sh "cat ${env.WORKSPACE}/gateway-service/.env"
-        sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
-    }
-
     stage('Call Terraform and create a VM in GCP') { 
         sh 'terraform init'
         sh 'terraform plan -out=tfplan'
         sh 'terraform show tfplan'
 
-        //sh 'terraform apply -auto-approve'
-        //def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+        sh 'terraform apply -auto-approve'
+        def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+        sh "echo \"CONSUL_IP=${IP}\" >> ${env.WORKSPACE}/gateway-service/.env"
+        sh "cat ${env.WORKSPACE}/gateway-service/.env"
+        sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
     }
     
     stage('Tag and Push Gateway Images') {
