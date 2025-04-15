@@ -66,26 +66,19 @@ def call(Map params) {
             def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
 
             // Copy the Docker image to the GCP VM
-            sh """                
-                scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service}.tar ubuntu@${IP}:/home/ubuntu/
-                echo "Copied to GCP VM"
-            """
+            retry(3) {
+                sh """                
+                    scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service}.tar ubuntu@${IP}:/home/ubuntu/
+                    echo "Copied to GCP VM"
+                """
+            }
             
-            // // SSH into the VM and load the Docker image
-            sh """
-                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}'
-                echo "Loaded into the GCP VM"
-            """   
-
-            // Retry mechanism for SSH
+            // SSH into the VM and load the Docker image
             retry(3) {
                 sh """
-                    scp -o StrictHostKeyChecking=no \
-                        -o ConnectTimeout=30 \
-                        -i /var/lib/jenkins/.ssh/id_rsa \
-                        ${imageName}.tar ubuntu@${IP}:/home/ubuntu/
-                    echo "Completed the upload of the docker tar ball"
-                """
+                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}.tar'
+                    echo "Loaded into the GCP VM"
+                """   
             }
             
             // Execute remote commands
@@ -98,7 +91,7 @@ def call(Map params) {
             // """
 
             sh """            
-                rm -rf ${sourceImage}
+                rm -rf ${service}.tar
                 echo "Deleted the tar file ${sourceImage}.tar"
             """                               
         }
