@@ -58,7 +58,7 @@ def call(Map params) {
                                           
             // Save the Docker image as a tar file
             sh """
-                docker save ${sourceImage} -o ${sourceImage}
+                docker save ${sourceImage} -o ${sourceImage}.tar
                 echo "The docker saved to ${sourceImage}"
             """
 
@@ -82,7 +82,7 @@ def call(Map params) {
                     scp -o StrictHostKeyChecking=no \
                         -o ConnectTimeout=30 \
                         -i /var/lib/jenkins/.ssh/id_rsa \
-                        ${sourceImage} ubuntu@${IP}:/home/ubuntu/
+                        ${sourceImage}.tar ubuntu@${IP}:/home/ubuntu/
                 """
             }
             
