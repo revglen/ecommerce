@@ -23,7 +23,7 @@ def call(Map params) {
 
         sh 'terraform apply -auto-approve'
         def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
-        sh "echo \"CONSUL_IP=${IP}\" >> ${env.WORKSPACE}/gateway-service/.env"
+        sh "echo \"CONSUL_IP=${IP}\" > ${env.WORKSPACE}/gateway-service/.env"
         sh "cat ${env.WORKSPACE}/gateway-service/.env"
         sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
     }
@@ -67,19 +67,15 @@ def call(Map params) {
             sh """
             docker tag ${sourceImage} ${targetImage}
             """
-            
-            //Push the image to gcp
-            // Build your Docker image
-            //sh 'docker build -t my-app:latest .'
-            
+                               
             // Save the Docker image as a tar file
-            //sh 'docker save my-app:latest -o my-app.tar'
+            sh 'docker save ${targetImage} -o ${targetImage}.tar'
             
             // Copy the Docker image to the GCP VM
-            //sh "scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa my-app.tar ubuntu@${env.INSTANCE_IP}:/home/ubuntu/"
+            sh "scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${targetImage}.tar ubuntu@${env.INSTANCE_IP}:/home/ubuntu/"
             
             // SSH into the VM and load the Docker image
-            //sh "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${env.INSTANCE_IP} 'docker load -i /home/ubuntu/my-app.tar'"
+            sh "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${env.INSTANCE_IP} 'docker load -i /home/ubuntu/${targetImage}.tar'"
                     
         }
     }
