@@ -79,9 +79,18 @@ def call(Map params) {
             }
             
             //Execute remote commands
-            sh """
-                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker run -d ${env.GATEWAY_PORTS} ${sourceImage}'
-            """
+            if (service == 'api-gateway') {
+                sh """
+                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker run -d -o 80:80 -p 443:443 ${sourceImage}'
+                """
+            }
+            else {
+                sh """
+                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker run -d -p 8300:8300 -p 8301:8301/tcp -p 8301:8301/udp -p 8500:8500 -p 8600:8600/tcp -p 8600:8600/udp
+
+ ${sourceImage}'
+                """
+            }
 
             sh """            
                 rm -rf ${service}.tar
