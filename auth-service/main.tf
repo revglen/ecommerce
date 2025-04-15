@@ -24,7 +24,7 @@ resource "local_file" "public_key" {
 }
 
 resource "google_compute_instance" "docker_vm" {
-  name         = "gateway-vm"
+  name         = "authentication-vm"
   machine_type = var.machine_type
   zone         = var.zone
 

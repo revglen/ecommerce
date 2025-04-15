@@ -4,8 +4,6 @@ def call(Map params) {
     env.GCP_PROJECT = params.gcpProject
     env.GITHUB_REPO = params.githubRepo
     env.ZONE = params.zone
-    env.REGISTRY = params.registry
-    env.CONSUL_IP = params.consulIP
     env.WORKSPACE = params.workspace
     env.GOOGLE_CREDENTIALS = params.google_credentials
     env.TF_VAR_project_id = params.gcpProject
@@ -13,11 +11,8 @@ def call(Map params) {
     env.SSH_PUB_KEY=params.ssh_pub_key
     env.PORTS=params.ports
 
-    // ✅ Use 'def' for local vars to avoid Groovy warnings
-    def GATEWAY_VM_NAME = 'api-gateway'
-    def IMAGE_NAME = 'api-gateway'
-    def COMPOSE_FILE = 'docker-compose.yml'    
-    
+    def COMPOSE_FILE = 'docker-compose.yml'
+    def CONSUL_IP = ''
     
     stage('Call Terraform and create a VM in GCP') {         
 
@@ -93,11 +88,11 @@ def call(Map params) {
             """                               
         }
     }
-    
-    stage('Cleanup Gateway Containers') {
-        echo "Stopping gateway containers"
-        sh 'docker stop $(docker ps -q) || true'        
-    }
+
+    return [
+        consul_ip: sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim(),
+        timestamp: new Date().format("yyyy-MM-dd HH:mm:ss")
+    ]
 }
 
-return this
+//return this

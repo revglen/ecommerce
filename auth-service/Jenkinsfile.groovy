@@ -4,19 +4,35 @@ def call(Map params) {
     env.GCP_PROJECT = params.gcpProject
     env.GITHUB_REPO = params.githubRepo
     env.ZONE = params.zone
-    env.REGISTRY = params.registry
-    env.CONSUL_IP = params.consulIP
     env.WORKSPACE = params.workspace
+    env.GOOGLE_CREDENTIALS = params.google_credentials
+    env.TF_VAR_project_id = params.gcpProject
+    env.SSH_KEY=params.ssh_key
+    env.SSH_PUB_KEY=params.ssh_pub_key
+    env.PORTS=params.ports
+    env.CONSUL_IP=params.consul_ip
 
     def COMPOSE_FILE = 'docker-compose.yml'     
     
-    stage('Build Authebtication Service') {        
+    stage('Call Terraform and create a VM in GCP') {         
 
-        echo "${env.WORKSPACE}/auth-service/${COMPOSE_FILE}"
-        sh "echo \"CONSUL_HOST=${env.CONSUL_IP}\" >> ${env.WORKSPACE}/auth-service/.env"
+        sh 'terraform init'
+        //sh 'terraform plan -out=tfplan'
+        //sh 'terraform show tfplan'
+
+        sh """
+            terraform apply -auto-approve \
+                -var="ssh_public_key=${env.SSH_PUB_KEY}" \
+                -var="project_id=${env.TF_VAR_project_id}"
+        """
+
+        def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+        sh "ssh-keygen -R ${IP} || true"
+        sh "echo \"CONSUL_IP=${env.CONSUL_IP}\" > ${env.WORKSPACE}/gateway-service/.env"
         sh "echo \"CONSUL_PORT=8500\" >> ${env.WORKSPACE}/auth-service/.env"
-        sh "cat ${env.WORKSPACE}/auth-service/.env"
-        sh "docker compose -f ${env.WORKSPACE}/auth-service/${COMPOSE_FILE} up -d --build"
+
+        sh "cat ${env.WORKSPACE}/gateway-service/.env"
+        sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
     }
     
     stage('Tag and Push Gateway Images') {
@@ -25,7 +41,7 @@ def call(Map params) {
         def HOME = "${env.DOCKER_HOME}"    
         
         def services = sh(
-            script: "docker compose -f ${env.WORKSPACE}/auth-service/${COMPOSE_FILE} config --services",
+            script: "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} config --services",
             returnStdout: true
         ).trim().split('\n')
                 
@@ -33,42 +49,42 @@ def call(Map params) {
             echo "--- Processing service: ${service} ---"
         
             def sourceImage = sh(
-                script: "docker compose -f ${env.WORKSPACE}/auth-service/${COMPOSE_FILE} config | grep -A15 '${service}:' | grep 'image:' | awk '{print \$2}'",
+                script: "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} config | grep -A15 '${service}:' | grep 'image:' | awk '{print \$2}'",
                 returnStdout: true
             ).trim()
             
             echo "Source image from compose: '${sourceImage}'"
-            
-            def imageNameOnly = sourceImage.split('/').last()
-            def targetImage = "${REGISTRY}/${imageNameOnly}-${env.BUILD_NUMBER}"
-            
-            echo "Calculated target image: '${targetImage}'"
-            
-            def imageId = sh(
-                script: "docker images -q ${sourceImage}",
-                returnStdout: true
-            ).trim()
-            
-            if (!imageId) {
-                echo "WARNING: Source image not found! Listing available images:"
-                sh 'docker images'
-                error "Source image ${sourceImage} not found in local registry!"
+                                          
+            // Save the Docker image as a tar file
+            sh """
+                docker save ${sourceImage} -o ${service}.tar
+                echo "The docker saved to ${service}.tar"
+            """
+
+            def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+
+            // Copy the Docker image to the GCP VM
+            retry(3) {
+                sh """                
+                    scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service}.tar ubuntu@${IP}:/home/ubuntu/
+                    echo "Copied to GCP VM"
+                """
             }
             
-            sh """
-            docker tag ${sourceImage} ${targetImage}
-            """
+            // SSH into the VM and load the Docker image
+            retry(3) {
+                sh """
+                    ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}.tar'
+                    echo "Loaded into the GCP VM"
+                """   
+            }
             
-            //sh """
-            //docker push ${targetImage}
-            //"""
+            //Execute remote commands
+            sh """
+                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'ddocker run -d ${env.env.PORTS} ${sourceImage}'
+            """                       
         }
-    }
-    
-    stage('Cleanup Authebtication Containers') {
-        echo "Stopping Authebtication containers"
-        sh 'docker stop $(docker ps -q) || true'
-    }
+    }      
 }
 
 return this
