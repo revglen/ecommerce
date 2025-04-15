@@ -11,6 +11,7 @@ def call(Map params) {
     env.TF_VAR_project_id = params.gcpProject
     env.SSH_KEY=params.ssh_key
     env.SSH_PUB_KEY=params.ssh_pub_key
+    env.PORTS=params.ports
 
     // ✅ Use 'def' for local vars to avoid Groovy warnings
     def GATEWAY_VM_NAME = 'api-gateway'
@@ -81,31 +82,21 @@ def call(Map params) {
                 """   
             }
             
-            // Execute remote commands
-            // sh """
-            //     ssh -o StrictHostKeyChecking=no \
-            //         -i ${env.SSH_KEY} \
-            //         ubuntu@${IP} \
-            //         'docker load -i /home/${ubuntu}/${imageName} && \
-            //          docker run -d -p 80:80 my-app:latest'
-            // """
+            //Execute remote commands
+            sh """
+                ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'ddocker run -d ${env.env.PORTS} ${sourceImage}'
+            """
 
             sh """            
                 rm -rf ${service}.tar
-                echo "Deleted the tar file ${sourceImage}.tar"
+                echo "Deleted the tar file ${service}.tar"
             """                               
         }
     }
     
     stage('Cleanup Gateway Containers') {
         echo "Stopping gateway containers"
-        sh 'docker stop $(docker ps -q) || true'
-
-        sh """
-            
-            rm -rf ${sourceImage}
-            echo "Deleted the tar file"
-        """   
+        sh 'docker stop $(docker ps -q) || true'        
     }
 }
 
