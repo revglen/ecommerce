@@ -66,30 +66,43 @@ def call(Map params) {
             // Wait for port 22 to be open
             sh """
                 for i in {1..10}; do
-                    if nc -z ${IP} 22; then
-                        echo "Port 22 is open"
-                        scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service}.tar ubuntu@${IP}:/home/ubuntu/
-                        echo "Copied to GCP VM"
-                        break
-                    else
-                        echo "Waiting for SSH..."
+
+                    {
+                        if nc -z ${IP} 22; then
+                            echo "Port 22 is open"
+                            scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service}.tar ubuntu@${IP}:/home/ubuntu/
+                            echo "Copied to GCP VM"
+                            break
+                        else
+                            echo "Waiting for SSH..."
+                            sleep 5
+                        fi  
+                    } ||
+                    {
+                        echo "Error connecting. re-trying"
                         sleep 5
-                    fi                   
+                    }                
                 done
             """
 
             // Wait for port 22 to be open
             sh """
                 for i in {1..10}; do
-                    if nc -z ${IP} 22; then
-                        echo "Port 22 is open"
-                         ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}.tar && docker run -d ${port} ${sourceImage}'
-                        echo "Copied to GCP VM"
-                        break
-                    else
-                        echo "Waiting for SSH..."
+                    {
+                        if nc -z ${IP} 22; then
+                            echo "Port 22 is open"
+                            ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}.tar && docker run -d ${port} ${sourceImage}'
+                            echo "Copied to GCP VM"
+                            break
+                        else
+                            echo "Waiting for SSH..."
+                            sleep 5
+                        fi
+                    } ||
+                    {
+                        echo "Error connecting. re-trying"
                         sleep 5
-                    fi                   
+                    }                    
                 done
             """
             
