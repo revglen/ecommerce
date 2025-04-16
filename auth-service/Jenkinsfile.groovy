@@ -28,20 +28,20 @@ def call(Map params) {
 
         def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
         sh "ssh-keygen -R ${IP} || true"
-        sh "echo \"CONSUL_IP=${env.CONSUL_IP}\" > ${env.WORKSPACE}/gateway-service/.env"
+        sh "echo \"CONSUL_IP=${env.CONSUL_IP}\" > ${env.WORKSPACE}/auth-service/.env"
         sh "echo \"CONSUL_PORT=8500\" >> ${env.WORKSPACE}/auth-service/.env"
 
-        sh "cat ${env.WORKSPACE}/gateway-service/.env"
-        sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
+        sh "cat ${env.WORKSPACE}/auth-service/.env"
+        sh "docker compose -f ${env.WORKSPACE}/auth-service/${COMPOSE_FILE} up -d --build"
     }
     
-    stage('Tag and Push Gateway Images') {
+    stage('Tag and Push auth Images') {
        
         def DOCKER_CONFIG = "${env.DOCKER_HOME}/.docker"
         def HOME = "${env.DOCKER_HOME}"    
         
         def services = sh(
-            script: "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} config --services",
+            script: "docker compose -f ${env.WORKSPACE}/auth-service/${COMPOSE_FILE} config --services",
             returnStdout: true
         ).trim().split('\n')
                 
@@ -49,7 +49,7 @@ def call(Map params) {
             echo "--- Processing service: ${service} ---"
         
             def sourceImage = sh(
-                script: "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} config | grep -A15 '${service}:' | grep 'image:' | awk '{print \$2}'",
+                script: "docker compose -f ${env.WORKSPACE}/auth-service/${COMPOSE_FILE} config | grep -A15 '${service}:' | grep 'image:' | awk '{print \$2}'",
                 returnStdout: true
             ).trim()
             
