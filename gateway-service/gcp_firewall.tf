@@ -21,8 +21,8 @@ resource "google_compute_firewall" "allow_web_traffic_auth" {
 
   # Magic happens here:
   lifecycle {
-    # Skip ALL checks if resource exists
-    ignore_changes = all
+    create_before_destroy = false
+
     # Don't replace if exists (even if config differs)
     prevent_destroy = true
   }
