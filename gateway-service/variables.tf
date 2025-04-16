@@ -32,9 +32,3 @@ variable "ssh_public_key" {
   type        = string
   sensitive   = true  # Marks the variable as sensitive
 }
-
-variable "firewall_name" {
-  description = "Name of the firewall rule"
-  type        = string
-  default     = "allow-web-traffic-auth"
-}
