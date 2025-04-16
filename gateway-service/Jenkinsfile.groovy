@@ -12,12 +12,25 @@ def call(Map params) {
     
     def COMPOSE_FILE = 'docker-compose.yml'
     def CONSUL_IP = ''
+    def FIREWALL_NAME="allow-web-traffic"
+    def RESOURCE_ID="projects/${env.GCP_PROJECT}/global/firewalls/${FIREWALL_NAME}"
     
     stage('Call Terraform and create a VM in GCP') {         
 
         sh 'terraform init'
         //sh 'terraform plan -out=tfplan'
         //sh 'terraform show tfplan'
+
+        sh """
+            echo "[INFO] Checking if GCP firewall rule '$FIREWALL_NAME' exists..."
+
+            if gcloud compute firewall-rules describe "$FIREWALL_NAME" --project="$GOOGLE_PROJECT" >/dev/null 2>&1; then
+                echo "[INFO] Firewall rule exists. Importing into Terraform state..."
+                terraform import google_compute_firewall.allow_web_traffic_auth "$RESOURCE_ID"
+            else
+                echo "[INFO] Firewall rule does not exist. Terraform will create it."
+            fi
+        """
 
         sh """
             terraform apply -auto-approve \
