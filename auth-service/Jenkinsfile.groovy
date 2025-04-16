@@ -69,10 +69,13 @@ def call(Map params) {
 
                     {
                         if nc -z ${IP} 22; then
-                            echo "Port 22 is open"
-                            scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service}.tar ubuntu@${IP}:/home/ubuntu/
-                            echo "Copied to GCP VM"
-                            break
+                            echo "Port 22 is open for docker image upload"
+                            {
+                              scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service}.tar ubuntu@${IP}:/home/ubuntu/
+                              echo "Copied to GCP VM"
+                              break
+                            } ||
+                            { sleep 5}                            
                         else
                             echo "Waiting for SSH..."
                             sleep 5
@@ -90,10 +93,13 @@ def call(Map params) {
                 for i in {1..10}; do
                     {
                         if nc -z ${IP} 22; then
-                            echo "Port 22 is open"
-                            ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}.tar && docker run -d -p 8002:8002 ${sourceImage}'
-                            echo "Copied to GCP VM"
-                            break
+                            echo "Port 22 is open for docker command execution"
+                            {
+                              ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}.tar && docker run -d -p 8002:8002 ${sourceImage}'
+                              echo "Docker commands executed"
+                              break
+                            } ||
+                            { sleep 5}
                         else
                             echo "Waiting for SSH..."
                             sleep 5
