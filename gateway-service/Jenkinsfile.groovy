@@ -40,6 +40,7 @@ def call(Map params) {
         """
 
         def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+        CONSUL_IP = IP
         sh "ssh-keygen -R ${IP} || true"
         sh "echo \"CONSUL_IP=${IP}\" > ${env.WORKSPACE}/gateway-service/.env"
         sh "cat ${env.WORKSPACE}/gateway-service/.env"
@@ -131,10 +132,7 @@ def call(Map params) {
         }
     }
 
-    return [
-        consul_ip: sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim(),
-        timestamp: new Date().format("yyyy-MM-dd HH:mm:ss")
-    ]
+    return CONSUL_IP
 }
 
 return this
