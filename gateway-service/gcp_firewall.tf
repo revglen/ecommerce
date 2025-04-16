@@ -1,10 +1,10 @@
-# main.tf
-
 resource "google_compute_firewall" "allow_web_traffic_auth" {
-  count = length(data.google_compute_firewall.existing.*.name) == 0 ? 1 : 0
+  # This will ONLY create if doesn't exist (no duplicates, no errors)
+  name    = "allow-web-traffic-auth"
+  project = var.project_id
+  network = "default"
 
-  name        = var.firewall_name
-  network     = "default"
+  # Rule configuration (customize as needed)
   direction   = "INGRESS"
   priority    = 1000
   allow {
@@ -18,33 +18,18 @@ resource "google_compute_firewall" "allow_web_traffic_auth" {
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["http-server", "https-server"]
 
-  # Ensure rule is deleted cleanly when removed from Terraform
+  # Magic happens here:
   lifecycle {
-    create_before_destroy = true
+    # Skip ALL checks if resource exists
+    ignore_changes = all
+    # Don't replace if exists (even if config differs)
+    prevent_destroy = true
   }
 }
 
-resource "google_compute_firewall" "allow_web_traffic_auth" {
-  name        = "allow-web-traffic-auth"
-  project     = var.project_id
-  network     = "default"
-  direction   = "INGRESS"
-  priority    = 1000
-
-  allow {
-    protocol = "tcp"
-    ports    = ["80", "443", "8500", "8300", "8301", "8600"]
-  }
-  allow {
-    protocol = "udp"
-    ports    = ["8600", "8301"]
-  }
-  
-  source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["http-server", "https-server"]
-
-  # Skip API error if rule already exists (non-Terraform managed)
-  lifecycle {
-    ignore_changes = [name, project]  # Prevents forced recreation
-  }
+# Safe import block (Terraform 1.5+)
+import {
+  to = google_compute_firewall.allow_web_traffic_auth
+  id = "projects/${var.project_id}/global/firewalls/allow-web-traffic-auth"
 }
+
