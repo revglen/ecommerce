@@ -132,6 +132,7 @@ def call(Map params) {
         }
     }
 
+    echo "Just before exiting... ${CONSUL_IP}"
     return CONSUL_IP
 }
 
