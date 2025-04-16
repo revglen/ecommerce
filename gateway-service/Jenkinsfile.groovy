@@ -21,10 +21,24 @@ def call(Map params) {
         //sh 'terraform plan -out=tfplan'
         //sh 'terraform show tfplan'
 
-        sh """
-          echo "[INFO] Deleting the firewall if the firewall rule '$FIREWALL_NAME' exists..."
-          gcloud auth login
-          gcloud compute firewall-rules delete "$FIREWALL_NAME" --project="$env.GCP_PROJECT" --quiet || true
+        
+          sh '''
+            echo "[INFO] Authenticating with gcloud using service account..."
+
+            gcloud auth activate-service-account --key-file="$env.GOOGLE_CREDENTIALS"           
+            gcloud config set project "$env.GCP_PROJECT"
+
+            echo "[INFO] Deleting the firewall if the firewall rule '$FIREWALL_NAME' exists..."
+            gcloud compute firewall-rules delete "$FIREWALL_NAME" --project="$env.GCP_PROJECT" --quiet || true
+          '''
+        }
+
+        echo "[INFO] Deleting the firewall if the firewall rule '$FIREWALL_NAME' exists..."
+
+
+
+
+          
         """
 
         sh """
