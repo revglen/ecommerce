@@ -66,49 +66,42 @@ def call(Map params) {
             // Wait for port 22 to be open
             sh """
                 for i in {1..10}; do
-
-                    {
-                        if nc -z ${IP} 22; then
-                            echo "Port 22 is open for docker image upload"
-                            {
-                              scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service}.tar ubuntu@${IP}:/home/ubuntu/
-                              echo "Copied to GCP VM"
-                              break
-                            } ||
-                            { sleep 5}                            
+                    if nc -z -w 5 ${IP} 22; then
+                        echo "Port 22 is open, attempting SCP..."
+                        if scp -o StrictHostKeyChecking=no \
+                            -o ConnectTimeout=10 \
+                            -i ${env.SSH_KEY} \
+                            ${service}.tar ubuntu@${IP}:/home/ubuntu/; then
+                            echo "Successfully copied to GCP VM"
+                            exit 0
                         else
-                            echo "Waiting for SSH..."
-                            sleep 5
-                        fi  
-                    } ||
-                    {
-                        echo "Error connecting. re-trying"
-                        sleep 5
-                    }                
+                            echo "SCP attempt $i failed"
+                        fi
+                    else
+                        echo "SSH not available yet (attempt $i/10)"
+                    fi
+                    sleep 5
                 done
             """
 
             // Wait for port 22 to be open
             sh """
                 for i in {1..10}; do
-                    {
-                        if nc -z ${IP} 22; then
-                            echo "Port 22 is open for docker command execution"
-                            {
-                              ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}.tar && docker run -d -p 8002:8002 ${sourceImage}'
-                              echo "Docker commands executed"
-                              break
-                            } ||
-                            { sleep 5}
+                    if nc -z "$IP" 22; then
+                        echo "Port 22 is open for Docker command execution."
+                        
+                        if ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "ubuntu@$IP" \
+                        "docker load -i /home/ubuntu/${service}.tar && docker run -d $port $sourceImage"; then
+                            echo "Docker commands executed successfully."
+                            break
                         else
-                            echo "Waiting for SSH..."
+                            echo "Failed to execute Docker commands. Retrying..."
                             sleep 5
                         fi
-                    } ||
-                    {
-                        echo "Error connecting. re-trying"
+                    else
+                        echo "Waiting for SSH to be available..."
                         sleep 5
-                    }                    
+                    fi
                 done
             """
             
