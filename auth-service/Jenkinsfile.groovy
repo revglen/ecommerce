@@ -28,7 +28,7 @@ def call(Map params) {
         sh """
             echo "[INFO] Checking if GCP firewall rule '$FIREWALL_NAME' exists..."
 
-            if gcloud compute firewall-rules describe "$FIREWALL_NAME" --project="$GOOGLE_PROJECT" >/dev/null 2>&1; then
+            if gcloud compute firewall-rules describe "$FIREWALL_NAME" --project="$env.GCP_PROJECT" >/dev/null 2>&1; then
                 echo "[INFO] Firewall rule exists. Importing into Terraform state..."
                 terraform import google_compute_firewall.allow_web_traffic_auth "$RESOURCE_ID"
             else
