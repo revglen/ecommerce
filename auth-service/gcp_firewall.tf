@@ -5,11 +5,7 @@ resource "google_compute_firewall" "allow_web_traffic" {
   priority    = 1000
   allow {
     protocol = "tcp"
-    ports    = ["80", "443", "8500", "8300", "8301", "8600"]
-  }
-  allow {
-    protocol = "udp"
-    ports    = ["8600", "8301"]
+    ports    = ["80", "443", "8002", "22"]
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["http-server", "https-server"]
