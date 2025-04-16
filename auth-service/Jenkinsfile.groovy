@@ -28,7 +28,7 @@ def call(Map params) {
 
         def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
         sh "ssh-keygen -R ${IP} || true"
-        sh "echo \"CONSUL_IP=${env.CONSUL_IP}\" > ${env.WORKSPACE}/auth-service/.env"
+        sh "echo \"CONSUL_HOST=${env.CONSUL_IP}\" > ${env.WORKSPACE}/auth-service/.env"
         sh "echo \"CONSUL_PORT=8500\" >> ${env.WORKSPACE}/auth-service/.env"
 
         sh "cat ${env.WORKSPACE}/auth-service/.env"
