@@ -1,7 +1,7 @@
 
-resource "google_compute_firewall" "allow_web_traffic_auth" {
+resource "google_compute_firewall" "allow_web_traffic" {
   # This will ONLY create if doesn't exist (no duplicates, no errors)
-  name    = "allow-web-traffic-auth"
+  name    = "allow-web-traffic"
   project = var.project_id
   network = "default"
 
@@ -39,7 +39,7 @@ resource "google_compute_firewall" "allow_web_traffic_auth" {
 
 # # Safe import block (Terraform 1.5+)
 # import {
-#   to = google_compute_firewall.allow_web_traffic_auth
-#   id = "projects/${var.project_id}/global/firewalls/allow-web-traffic-auth"
+#   to = google_compute_firewall.allow_web_traffic
+#   id = "projects/${var.project_id}/global/firewalls/allow-web-traffic"
 # }
 
