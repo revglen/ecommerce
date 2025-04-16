@@ -27,6 +27,7 @@ def call(Map params) {
 
         sh """
           echo "[INFO] Deleting the firewall if the firewall rule '$FIREWALL_NAME' exists..."
+          gcloud auth login
           gcloud compute firewall-rules delete "$FIREWALL_NAME" --project="$env.GCP_PROJECT" --quiet || true
         """
 
