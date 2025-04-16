@@ -13,7 +13,7 @@ def call(Map params) {
     env.API_KEY=params.api_key
     env.ALGORITHM=params.algorithm
     env.ACCESS_TOKEN_EXPIRE_MINUTES=params.token_expiry
-    
+    env.CONSUL_ADDRESS = params.result 
     
     def COMPOSE_FILE = 'docker-compose.yml'
     def FIREWALL_NAME="allow-web-traffic-auth"
@@ -45,9 +45,9 @@ def call(Map params) {
 
         def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
         sh "ssh-keygen -R ${IP} || true"
-        sh "echo The Consul is ${CONSUL_ADDRESS}"        
+        sh "echo The Consul is ${env.CONSUL_ADDRESS}"        
 
-        sh "echo \"CONSUL_HOST=${CONSUL_ADDRESS}\" > ${env.WORKSPACE}/auth-service/.env"
+        sh "echo \"CONSUL_HOST=${env.CONSUL_ADDRESS}\" > ${env.WORKSPACE}/auth-service/.env"
         sh "echo \"EXTERNAL_HOST_ip=${IP}\" > ${env.WORKSPACE}/auth-service/.env"
         sh "echo \"CONSUL_PORT=8500\" >> ${env.WORKSPACE}/auth-service/.env"
 
