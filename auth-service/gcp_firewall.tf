@@ -1,5 +1,5 @@
 resource "google_compute_firewall" "allow_web_traffic_auth" {
-  name        = "allow-web-traffic_auth"
+  name        = "allow-web-traffic-auth"
   network     = "default"
   direction   = "INGRESS"
   priority    = 1000
@@ -13,5 +13,5 @@ resource "google_compute_firewall" "allow_web_traffic_auth" {
 
 import {
   to = google_compute_firewall.allow_web_traffic_auth
-  id = "projects/testo-455513/global/firewalls/allow-web-traffic_auth"
+  id = "projects/testo-455513/global/firewalls/allow-web-traffic-auth"
 }

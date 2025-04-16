@@ -74,7 +74,7 @@ def call(Map params) {
 
             // Wait for port 22 to be open
             sh """
-                for i in {1..10}; do
+                for i in $(seq 1 10); do
                     if nc -z -w 5 ${IP} 22; then
                         echo "Port 22 is open, attempting SCP..."
                         if scp -o StrictHostKeyChecking=no \
@@ -95,7 +95,7 @@ def call(Map params) {
 
             // Wait for port 22 to be open
             sh """
-                for i in {1..10}; do
+                for i in $(seq 1 10); do
                     if nc -z "$IP" 22; then
                         echo "Port 22 is open for Docker command execution."
                         
