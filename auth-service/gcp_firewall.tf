@@ -20,8 +20,8 @@ resource "google_compute_firewall" "allow_web_traffic_auth" {
   }
 }
 
-# Safe import block (Terraform 1.5+)
-import {
-  to = google_compute_firewall.allow_web_traffic_auth
-  id = "projects/${var.project_id}/global/firewalls/allow-web-traffic-auth"
-}
+# # Safe import block (Terraform 1.5+)
+# import {
+#   to = google_compute_firewall.allow_web_traffic_auth
+#   id = "projects/${var.project_id}/global/firewalls/allow-web-traffic-auth"
+# }
