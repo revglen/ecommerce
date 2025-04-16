@@ -78,12 +78,12 @@ def call(Map params) {
                             -i ${env.SSH_KEY} \
                             ${service}.tar ubuntu@${IP}:/home/ubuntu/; then
                             echo "Successfully copied to GCP VM"
-                            exit 0
+                            break
                         else
-                            echo "SCP attempt $i failed"
+                            echo "SCP attempt \$i failed"
                         fi
                     else
-                        echo "SSH not available yet (attempt $i/10)"
+                        echo "SSH not available yet (attempt \$i/10)"
                     fi
                     sleep 5
                 done
