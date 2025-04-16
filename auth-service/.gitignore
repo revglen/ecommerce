@@ -187,10 +187,8 @@ logs/
 war/
 webapps/
 tmp/
-*.groovy
 
 # Terraform
-*.tf
 .terraform.lock.hcl
 .terraform/
 terraform.tfstate*

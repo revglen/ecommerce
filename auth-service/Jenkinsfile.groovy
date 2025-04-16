@@ -9,8 +9,11 @@ def call(Map params) {
     env.TF_VAR_project_id = params.gcpProject
     env.SSH_KEY=params.ssh_key
     env.SSH_PUB_KEY=params.ssh_pub_key
-    env.PORTS=params.ports
-    env.CONSUL_IP=params.consul_ip
+    env.SECRET_KEY=params.secret_key
+    env.API_KEY=params.api_key
+    env.ALGORITHM=params.algorithm
+    env.ACCESS_TOKEN_EXPIRE_MINUTES=params.token_expiry
+    env.RESULT=params.result
     
     def COMPOSE_FILE = 'docker-compose.yml'     
     
@@ -28,8 +31,14 @@ def call(Map params) {
 
         def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
         sh "ssh-keygen -R ${IP} || true"
-        sh "echo \"CONSUL_HOST=${env.CONSUL_IP}\" > ${env.WORKSPACE}/auth-service/.env"
+        sh "echo \"CONSUL_HOST=${env.RESULT.consul_ip}\" > ${env.WORKSPACE}/auth-service/.env"
+        sh "echo \"EXTERNAL_HOST_ip=${IP}\" > ${env.WORKSPACE}/auth-service/.env"
         sh "echo \"CONSUL_PORT=8500\" >> ${env.WORKSPACE}/auth-service/.env"
+
+        sh "echo \"SECRET_KEY=${env.SECRET_KEY}\" > ${env.WORKSPACE}/auth-service/.env"
+        sh "echo \"API_KEY=${env.API_KEY}\" > ${env.WORKSPACE}/auth-service/.env"
+        sh "echo \"ALGORITHM=${env.ALGORITHM}\" > ${env.WORKSPACE}/auth-service/.env"
+        sh "echo \"ACCESS_TOKEN_EXPIRE_MINUTES=${env.ACCESS_TOKEN_EXPIRE_MINUTES}\" > ${env.WORKSPACE}/auth-service/.env"
 
         sh "cat ${env.WORKSPACE}/auth-service/.env"
         sh "docker compose -f ${env.WORKSPACE}/auth-service/${COMPOSE_FILE} up -d --build"

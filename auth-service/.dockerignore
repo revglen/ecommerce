@@ -1,0 +1,97 @@
+# General
+**/*~
+**/*.log
+**/.DS_Store
+**/Thumbs.db
+
+# Python specific
+**/__pycache__
+**/*.py[cod]
+**/*$py.class
+**/.python-version
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+
+# Tests
+tests/
+test/
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Documentation
+docs/
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Git
+.git/
+.gitignore
+.gitattributes
+.gitmodules
+
+# Docker
+docker-compose*
+docker-compose/
+.dockerignore
+Dockerfile*
+dockerfile*
+docker-*
+Dockerfile
+
+# Local development files
+local_config/
+*.local
+*.dev
+
+# Jenkins
+.jenkins/
+workspace/
+jobs/*/builds/
+jobs/*/last*
+jobs/*/next*
+builds/
+plugins/
+logs/
+war/
+webapps/
+tmp/
+*.groovy
+
+# Terraform/Jenkins/Docker
+*.tf
+*.hcl
+*.tfstate
+.terraform.lock.hcl
+.terraform/
+terraform.tfstate*
+*.tfplan
+crash.log
+override.tf
+override.tf.json
+*.terraform.tfstate.lock.info
+*.groovy
+Dockerfile
+docker-compose.yml
+*.egg-info
+.ssh
+.terraform
+docker-compose.yml
+
+#Others
+*.sh
+*.template

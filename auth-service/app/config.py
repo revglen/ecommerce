@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     @staticmethod
     def get_external_ip():
-        return os.getenv("CONSUL_HOST")
+        return os.getenv("EXTERNAL_HOST_IP")
     
     @property
     def cors_origins_list(self) -> List[str]:
