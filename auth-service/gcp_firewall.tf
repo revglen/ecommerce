@@ -14,9 +14,21 @@ resource "google_compute_firewall" "allow_web_traffic_auth" {
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["http-server", "https-server"]
 
-  # Magic happens here:
+  timeouts {
+    create = "5m"
+    delete = "5m"
+  }
+
   lifecycle {
-    ignore_changes = all
+    # If the resource exists with different settings, 
+    # Terraform will adopt it without changes
+    ignore_changes = [
+      name,
+      network,
+      allow,
+      source_ranges,
+      target_tags
+    ]
   }
 }
 
