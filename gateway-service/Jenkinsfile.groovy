@@ -22,7 +22,7 @@ def call(Map params) {
         //sh 'terraform show tfplan'
 
         
-        sh '''
+        sh """
             echo "[INFO] Authenticating with gcloud using service account..."
 
             gcloud auth activate-service-account --key-file="$env.GOOGLE_CREDENTIALS"           
@@ -30,16 +30,8 @@ def call(Map params) {
 
             echo "[INFO] Deleting the firewall if the firewall rule '$FIREWALL_NAME' exists..."
             gcloud compute firewall-rules delete "$FIREWALL_NAME" --project="$env.GCP_PROJECT" --quiet || true
-        '''
-        
-
-        echo "[INFO] Deleting the firewall if the firewall rule '$FIREWALL_NAME' exists..."
-
-
-
-
-          
-        """
+            echo "[INFO] Deleting the firewall if the firewall rule '$FIREWALL_NAME' exists..."
+        """      
 
         sh """
             terraform apply -auto-approve \
