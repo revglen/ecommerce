@@ -21,17 +21,17 @@ def call(Map params) {
         //sh 'terraform plan -out=tfplan'
         //sh 'terraform show tfplan'
 
-        sh """
-          echo "[INFO] Checking if firewall rule '$FIREWALL_NAME' exists..."
+        // sh """
+        //   echo "[INFO] Checking if firewall rule '$FIREWALL_NAME' exists..."
 
-          if gcloud compute firewall-rules describe "$FIREWALL_NAME" --project="$env.GCP_PROJECT" >/dev/null 2>&1; then
-            echo "[INFO] Firewall rule exists. Deleting..."
-            gcloud compute firewall-rules delete "$FIREWALL_NAME" --project="$env.GCP_PROJECT" --quiet
-            echo "[INFO] Deleted firewall rule: $FIREWALL_NAME"
-          else
-            echo "[INFO] Firewall rule does not exist. Nothing to delete."
-          fi
-        """
+        //   if gcloud compute firewall-rules describe "$FIREWALL_NAME" --project="$env.GCP_PROJECT" >/dev/null 2>&1; then
+        //     echo "[INFO] Firewall rule exists. Deleting..."
+        //     gcloud compute firewall-rules delete "$FIREWALL_NAME" --project="$env.GCP_PROJECT" --quiet
+        //     echo "[INFO] Deleted firewall rule: $FIREWALL_NAME"
+        //   else
+        //     echo "[INFO] Firewall rule does not exist. Nothing to delete."
+        //   fi
+        // """
 
         sh """
             terraform apply -auto-approve \
