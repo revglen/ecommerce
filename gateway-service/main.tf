@@ -59,9 +59,17 @@ resource "google_compute_instance" "docker_vm" {
     sudo apt install ufw -y
     sudo ufw enable
     sudo ufw allow 22/tcp
+    sudo ufw allow 80/tcp && \
+    sudo ufw allow 443/tcp && \
+    sudo ufw allow 8500/tcp && \
+    sudo ufw allow 8300/tcp && \
+    sudo ufw allow 8301/tcp && \
+    sudo ufw allow 8301/udp && \
+    sudo ufw allow 8600/tcp && \
+    sudo ufw allow 8600/udp
   EOF
 
-  tags = ["docker-host"]
+  tags = ["docker-host","http-server","https-server"]
 }
 
 output "instance_ip" {
