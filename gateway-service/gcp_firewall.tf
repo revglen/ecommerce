@@ -1,3 +1,4 @@
+
 resource "google_compute_firewall" "allow_web_traffic_auth" {
   # This will ONLY create if doesn't exist (no duplicates, no errors)
   name    = "allow-web-traffic-auth"
