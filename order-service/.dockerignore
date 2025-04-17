@@ -92,5 +92,5 @@ docker-compose.yml
 docker-compose.yml
 
 #Others
-*.sh
+start_docker.sh
 *.template
