@@ -9,16 +9,33 @@ def call(Map params) {
     env.TF_VAR_project_id = params.gcpProject
     env.SSH_KEY=params.ssh_key
     env.SSH_PUB_KEY=params.ssh_pub_key
-    env.PORTS=params.ports
-    env.CONSUL_IP=params.consul_ip
-
-    def COMPOSE_FILE = 'docker-compose.yml'     
+    env.SECRET_KEY=params.secret_key
+    env.API_KEY=params.api_key
+    env.ALGORITHM=params.algorithm
+    env.ACCESS_TOKEN_EXPIRE_MINUTES=params.token_expiry
+    env.CONSUL_ADDRESS = params.result 
     
-    stage('Call Terraform and create a VM in GCP') {         
+    def COMPOSE_FILE = 'docker-compose.yml'
+    def FIREWALL_NAME="allow-web-traffic-order"
+    def RESOURCE_ID="projects/${env.GCP_PROJECT}/global/firewalls/${FIREWALL_NAME}"
+    def CONSUL_ADDRESS = params.result
+    
+    stage('Call Terraform and create a VM in GCP') {       
 
         sh 'terraform init'
         //sh 'terraform plan -out=tfplan'
         //sh 'terraform show tfplan'
+
+        sh """
+            echo "[INFO] Order with gcloud using service account..."
+
+            gcloud auth activate-service-account --key-file="$env.GOOGLE_CREDENTIALS"           
+            gcloud config set project "$env.GCP_PROJECT"
+
+            echo "[INFO] Deleting the firewall if the firewall rule '$FIREWALL_NAME' exists..."
+            gcloud compute firewall-rules delete "$FIREWALL_NAME" --project="$env.GCP_PROJECT" --quiet || true
+            echo "[INFO] Deleting the firewall if the firewall rule '$FIREWALL_NAME' exists..."
+        """  
 
         sh """
             terraform apply -auto-approve \
@@ -26,24 +43,24 @@ def call(Map params) {
                 -var="project_id=${env.TF_VAR_project_id}"
         """
 
-        sleep(3)
-        
         def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
         sh "ssh-keygen -R ${IP} || true"
-        sh "echo \"CONSUL_HOST=${env.CONSUL_IP}\" > ${env.WORKSPACE}/order-service/.env"
-        sh "echo \"CONSUL_PORT=8500\" >> ${env.WORKSPACE}/order-service/.env"
+        sh "echo The Consul is ${env.CONSUL_ADDRESS}"        
+
+        sh "echo \"CONSUL_HOST=${env.CONSUL_ADDRESS}\" > ${env.WORKSPACE}/order-service/.env"
         sh "echo \"EXTERNAL_HOST_IP=${IP}\" >> ${env.WORKSPACE}/order-service/.env"
+        sh "echo \"CONSUL_PORT=8500\" >> ${env.WORKSPACE}/order-service/.env"
 
         sh "echo \"DB_USER=order_user\" >> ${env.WORKSPACE}/order-service/.env"
-        sh "echo \"B_PASSWORD=order_password\" >> ${env.WORKSPACE}/order-service/.env"
-        sh "echo \"CB_HOST=localhost\" >> ${env.WORKSPACE}/order-service/.env"
+        sh "echo \"DB_PASSWORD=order_password\" >> ${env.WORKSPACE}/order-service/.env"
+        sh "echo \"DB_HOST=localhost\" >> ${env.WORKSPACE}/order-service/.env"
         sh "echo \"DB_PORT=5432\" >> ${env.WORKSPACE}/order-service/.env"
         sh "echo \"DB_NAME=order_db\" >> ${env.WORKSPACE}/order-service/.env"
 
-        sh "echo \"SECRET_KEY=Something\" >> ${env.WORKSPACE}/order-service/.env"
-        sh "echo \"API_KEY=Something\" >> ${env.WORKSPACE}/order-service/.env"
-        sh "echo \"CALGORITHM=HS256\" >> ${env.WORKSPACE}/order-service/.env"
-        sh "echo \"ACCESS_TOKEN_EXPIRE_MINUTES=30\" >> ${env.WORKSPACE}/order-service/.env"
+        sh "echo \"SECRET_KEY=${env.SECRET_KEY}\" >> ${env.WORKSPACE}/order-service/.env"
+        sh "echo \"API_KEY=${env.API_KEY}\" >> ${env.WORKSPACE}/order-service/.env"
+        sh "echo \"ALGORITHM=${env.ALGORITHM}\" >> ${env.WORKSPACE}/order-service/.env"
+        sh "echo \"ACCESS_TOKEN_EXPIRE_MINUTES=${env.ACCESS_TOKEN_EXPIRE_MINUTES}\" >> ${env.WORKSPACE}/order-service/.env"
 
         sh "echo \"CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000\" >> ${env.WORKSPACE}/order-service/.env"
         sh "echo \"PROMETHEUS_ENABLED=true\" >> ${env.WORKSPACE}/order-service/.env"
@@ -81,47 +98,52 @@ def call(Map params) {
 
             def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
 
-            def port = ""
-            if (service == 'api-gateway') {
-                port = "-p 5432:5432"
-            }
-            else {
-                port = "-p 8001:8001"
-            }
-
+            // Wait for port 22 to be open
             sh """
-                for i in {1..10}; do
-                    if nc -z ${IP} 22; then
-                        echo "Port 22 is open"
-                        scp -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ${service}.tar ubuntu@${IP}:/home/ubuntu/
-                        echo "Copied to GCP VM"
-                        break
+                for i in \$(seq 1 10); do
+                    if nc -z -w 5 ${IP} 22; then
+                        echo "Port 22 is open, attempting SCP..."
+                        if scp -o StrictHostKeyChecking=no \
+                            -o ConnectTimeout=10 \
+                            -i ${env.SSH_KEY} \
+                            ${service}.tar .env ubuntu@${IP}:/home/ubuntu/; then
+                            echo "Successfully copied to GCP VM"
+                            break
+                        else
+                            echo "SCP attempt \$i failed"
+                        fi
                     else
-                        echo "Waiting for SSH..."
-                        sleep 5
-                    fi                   
+                        echo "SSH not available yet (attempt \$i/10)"
+                    fi
+                    sleep 5
                 done
             """
 
             // Wait for port 22 to be open
             sh """
-                for i in {1..10}; do
-                    if nc -z ${IP} 22; then
-                        echo "Port 22 is open"
-                         ssh -o StrictHostKeyChecking=no -i ${env.SSH_KEY} ubuntu@${IP} 'docker load -i /home/ubuntu/${service}.tar && docker run -d ${port} ${sourceImage}'
-                        echo "Copied to GCP VM"
-                        break
+                for i in \$(seq 1 10); do
+                    if nc -z "$IP" 22; then
+                        echo "Port 22 is open for Docker command execution."
+                        
+                        if ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "ubuntu@$IP" \
+                        "docker load -i /home/ubuntu/${service}.tar && docker run --env-file ./.env -d -p 8002:8002 $sourceImage"; then
+                            echo "Docker commands executed successfully."
+                            break
+                        else
+                            echo "Failed to execute Docker commands. Retrying..."
+                            sleep 5
+                        fi
                     else
-                        echo "Waiting for SSH..."
+                        echo "Waiting for SSH to be available..."
                         sleep 5
-                    fi                   
+                    fi
                 done
             """
             
             sh """            
                 rm -rf ${service}.tar
                 echo "Deleted the tar file ${service}.tar"
-            """                     
+            """                                
         }
     }      
 }

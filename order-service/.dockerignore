@@ -11,11 +11,9 @@
 **/.python-version
 
 # Environments
-.env
 .venv
 env/
 venv/
-.venv/
 ENV/
 env.bak/
 venv.bak/
@@ -58,3 +56,41 @@ Dockerfile
 local_config/
 *.local
 *.dev
+
+# Jenkins
+.jenkins/
+workspace/
+jobs/*/builds/
+jobs/*/last*
+jobs/*/next*
+builds/
+plugins/
+logs/
+war/
+webapps/
+tmp/
+*.groovy
+
+# Terraform/Jenkins/Docker
+*.tf
+*.hcl
+*.tfstate
+.terraform.lock.hcl
+.terraform/
+terraform.tfstate*
+*.tfplan
+crash.log
+override.tf
+override.tf.json
+*.terraform.tfstate.lock.info
+*.groovy
+Dockerfile
+docker-compose.yml
+*.egg-info
+.ssh
+.terraform
+docker-compose.yml
+
+#Others
+*.sh
+*.template
