@@ -44,6 +44,7 @@ def call(Map params) {
         sh "ssh-keygen -R ${IP} || true"
         sh "echo \"CONSUL_IP=${IP}\" > ${env.WORKSPACE}/gateway-service/.env"
         sh "cat ${env.WORKSPACE}/gateway-service/.env"
+        sh "sed -e 's/\$CONSUL_IP/$CONSUL_IP/g'  /etc/nginx/templates/nginx.conf.template > /etc/nginx/nginx.conf"
         sh "docker compose -f ${env.WORKSPACE}/gateway-service/${COMPOSE_FILE} up -d --build"
     }
     

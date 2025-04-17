@@ -1,11 +1,10 @@
 #FROM nginx:alpine
 FROM nginx:latest
 
-#COPY ,/nginxnginx.conf.template /etc/nginx/nginx.conf.template
+#COPY ./nginx/nginx.conf.template /etc/nginx/nginx.conf.template
 
-#COPY ./nginx/templates/ /etc/nginx/templates
+COPY ./nginx/nginx.conf /etc/nginx.conf
 COPY ./ssl/ /etc/nginx/ssl/
-#COPY ./test.txt /etc/nginx/test.txt
 
 EXPOSE 80 443
 

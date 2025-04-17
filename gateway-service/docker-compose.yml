@@ -44,7 +44,7 @@ services:
       - ./nginx/templates/nginx.conf.template:/etc/nginx/templates/nginx.conf.template
       - ./test.txt:/etc/nginx/test.txt
       
-    command: sh -c "sed -e 's/$$CONSUL_IP/$CONSUL_IP/g'  /etc/nginx/templates/nginx.conf.template > /etc/nginx//nginx.conf &&               
+    command: sh -c "sed -e 's/$$CONSUL_IP/$CONSUL_IP/g'  /etc/nginx/templates/nginx.conf.template > /etc/nginx/nginx.conf &&               
                cat /etc/nginx//nginx.conf && 
                exec nginx -g 'daemon off;'"  
       
