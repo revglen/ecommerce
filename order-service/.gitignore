@@ -198,10 +198,6 @@ override.tf
 override.tf.json
 *.terraform.tfstate.lock.info
 
-
-#Others
-*.sh
-
 # Docker
 docker-compose.override.yml
 docker-compose.yml
