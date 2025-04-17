@@ -126,7 +126,7 @@ def call(Map params) {
                         echo "Port 22 is open for Docker command execution."
                         
                         if ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "ubuntu@$IP" \
-                        "docker load -i /home/ubuntu/${service}.tar && docker run --env-file ./.env -d -p 8002:8002 $sourceImage"; then
+                        "docker load -i /home/ubuntu/${service}.tar && docker run --env-file ./.env -d -p 8001:8001 -p 5432:5432 $sourceImage"; then
                             echo "Docker commands executed successfully."
                             break
                         else
