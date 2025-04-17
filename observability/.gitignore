@@ -131,7 +131,6 @@ celerybeat.pid
 # Environments
 
 .venv
-.env
 env/
 venv/
 ENV/
@@ -197,6 +196,10 @@ crash.log
 override.tf
 override.tf.json
 *.terraform.tfstate.lock.info
+
+
+#Others
+*.sh
 
 # Docker
 docker-compose.override.yml

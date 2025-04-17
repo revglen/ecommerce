@@ -119,12 +119,12 @@ def call(Map params) {
                 done
             """
 
-            def params = ""
+            def parameters = ""
             if (${service} != "postgres"){
-                params = "-p 8001:8001"
+                parameters = "-p 8001:8001"
             }
             else {
-                params = " -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432"
+                parameters = " -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432"
             }
 
             // Wait for port 22 to be open
@@ -134,7 +134,7 @@ def call(Map params) {
                         echo "Port 22 is open for Docker command execution."
                         
                         if ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "ubuntu@$IP" \
-                        "docker load -i /home/ubuntu/${service}.tar && docker run --env-file ./.env -d ${params} $sourceImage"; then
+                        "docker load -i /home/ubuntu/${service}.tar && docker run --env-file ./.env -d ${parameters} $sourceImage"; then
                             echo "Docker commands executed successfully."
                             break
                         else
