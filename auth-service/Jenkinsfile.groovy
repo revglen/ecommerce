@@ -96,7 +96,7 @@ def call(Map params) {
                         if scp -o StrictHostKeyChecking=no \
                             -o ConnectTimeout=10 \
                             -i ${env.SSH_KEY} \
-                            ${service}.tar ubuntu@${IP}:/home/ubuntu/; then
+                            ${service}.tar .env ubuntu@${IP}:/home/ubuntu/; then
                             echo "Successfully copied to GCP VM"
                             break
                         else
@@ -116,7 +116,7 @@ def call(Map params) {
                         echo "Port 22 is open for Docker command execution."
                         
                         if ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "ubuntu@$IP" \
-                        "docker load -i /home/ubuntu/${service}.tar && pwd && docker run --env-file .env -d -p 8002:8002 $sourceImage"; then
+                        "docker load -i /home/ubuntu/${service}.tar && pwd && docker run --env-file ./.env -d -p 8002:8002 $sourceImage"; then
                             echo "Docker commands executed successfully."
                             break
                         else
