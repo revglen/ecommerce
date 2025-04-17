@@ -48,13 +48,13 @@ def call(Map params) {
         sh "echo The Consul is ${env.CONSUL_ADDRESS}"        
 
         sh "echo \"CONSUL_HOST=${env.CONSUL_ADDRESS}\" > ${env.WORKSPACE}/auth-service/.env"
-        sh "echo \"EXTERNAL_HOST_ip=${IP}\" > ${env.WORKSPACE}/auth-service/.env"
+        sh "echo \"EXTERNAL_HOST_IP=${IP}\" >> ${env.WORKSPACE}/auth-service/.env"
         sh "echo \"CONSUL_PORT=8500\" >> ${env.WORKSPACE}/auth-service/.env"
 
-        sh "echo \"SECRET_KEY=${env.SECRET_KEY}\" > ${env.WORKSPACE}/auth-service/.env"
-        sh "echo \"API_KEY=${env.API_KEY}\" > ${env.WORKSPACE}/auth-service/.env"
-        sh "echo \"ALGORITHM=${env.ALGORITHM}\" > ${env.WORKSPACE}/auth-service/.env"
-        sh "echo \"ACCESS_TOKEN_EXPIRE_MINUTES=${env.ACCESS_TOKEN_EXPIRE_MINUTES}\" > ${env.WORKSPACE}/auth-service/.env"
+        sh "echo \"SECRET_KEY=${env.SECRET_KEY}\" >> ${env.WORKSPACE}/auth-service/.env"
+        sh "echo \"API_KEY=${env.API_KEY}\" >> ${env.WORKSPACE}/auth-service/.env"
+        sh "echo \"ALGORITHM=${env.ALGORITHM}\" >> ${env.WORKSPACE}/auth-service/.env"
+        sh "echo \"ACCESS_TOKEN_EXPIRE_MINUTES=${env.ACCESS_TOKEN_EXPIRE_MINUTES}\" >> ${env.WORKSPACE}/auth-service/.env"
 
         sh "cat ${env.WORKSPACE}/auth-service/.env"
         sh "docker compose -f ${env.WORKSPACE}/auth-service/${COMPOSE_FILE} up -d --build"
@@ -116,7 +116,7 @@ def call(Map params) {
                         echo "Port 22 is open for Docker command execution."
                         
                         if ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "ubuntu@$IP" \
-                        "docker load -i /home/ubuntu/${service}.tar && docker run --env-file .env -d -p 8002:8002 $sourceImage"; then
+                        "docker load -i /home/ubuntu/${service}.tar && pwd && docker run --env-file .env -d -p 8002:8002 $sourceImage"; then
                             echo "Docker commands executed successfully."
                             break
                         else

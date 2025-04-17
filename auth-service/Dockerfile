@@ -12,6 +12,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
+COPY .env ./
+RUN set -a && . ./.env && set +a
 #RUN pip install --no-cache-dir -r requirements1.txt
 
 RUN pip install --upgrade pip && \
