@@ -84,7 +84,7 @@ def call(Map params) {
             echo "--- Processing service: ${service} ---"
         
             def sourceImage = sh(
-                script: "docker compose -f ${env.WORKSPACE}/order-service/${COMPOSE_FILE} config | grep -A15 '${service}:' | grep 'image:' | awk '{print \$2}'",
+                script: "docker compose -f ${env.WORKSPACE}/order-service/${COMPOSE_FILE} config | grep -A5 '${service}' | grep 'image:' | awk '{print \$2}'",
                 returnStdout: true
             ).trim()
             
