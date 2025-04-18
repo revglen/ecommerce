@@ -17,7 +17,7 @@ def call(Map params) {
 
     def COMPOSE_FILE = 'docker-compose.yml'
     def CONSUL_IP = params.result 
-    def FIREWALL_NAME="allow-web-traffic_obs"
+    def FIREWALL_NAME="allow-web-traffic-obs"
     def RESOURCE_ID="projects/${env.GCP_PROJECT}/global/firewalls/${FIREWALL_NAME}"
     
     stage('Build observability Service') {   
