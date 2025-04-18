@@ -53,7 +53,7 @@ def call(Map params) {
 
         sh "echo \"DB_USER=order_user\" >> ${env.WORKSPACE}/order-service/.env"
         sh "echo \"DB_PASSWORD=order_password\" >> ${env.WORKSPACE}/order-service/.env"
-        sh "echo \"DB_HOST=localhost\" >> ${env.WORKSPACE}/order-service/.env"
+        sh "echo \"DB_HOST=order-postgres\" >> ${env.WORKSPACE}/order-service/.env"
         sh "echo \"DB_PORT=5432\" >> ${env.WORKSPACE}/order-service/.env"
         sh "echo \"DB_NAME=order_db\" >> ${env.WORKSPACE}/order-service/.env"
 
@@ -79,6 +79,27 @@ def call(Map params) {
             script: "docker compose -f ${env.WORKSPACE}/order-service/${COMPOSE_FILE} config --services",
             returnStdout: true
         ).trim().split('\n')
+
+        // Docker Network
+        sh """
+            for i in \$(seq 1 10); do
+                if nc -z "$IP" 22; then
+                    echo "Port 22 is open for Docker network creation"
+                    
+                    if ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "ubuntu@$IP" \
+                    "docker network create order-net"; then
+                        echo "Docker network created successfully."
+                        break
+                    else
+                        echo "Failed to create docker network. Retrying..."
+                        sleep 5
+                    fi
+                else
+                    echo "Waiting for SSH to be available..."
+                    sleep 5
+                fi
+            done
+        """
                 
         for (service in services) {
             echo "--- Processing service: ${service} ---"
@@ -122,9 +143,9 @@ def call(Map params) {
             def parameters = ""
 
             if (service != "postgres") {
-                parameters = "-p 8001:8001"
+                parameters = "--name order-service --network order-net -p 8001:8001"
             } else {
-                parameters = "-e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432"
+                parameters = "--name order-postgres --network order-net -e POSTGRES_USER=order_user -e POSTGRES_PASSWORD=order_password -e POSTGRES_DB=order_db -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432"
             }
 
             // Wait for port 22 to be open
