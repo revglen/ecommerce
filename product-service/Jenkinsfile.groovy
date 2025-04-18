@@ -53,7 +53,7 @@ def call(Map params) {
 
         sh "echo \"DB_USER=product_user\" >> ${env.WORKSPACE}/product-service/.env"
         sh "echo \"DB_PASSWORD=product_password\" >> ${env.WORKSPACE}/product-service/.env"
-        sh "echo \"DB_HOST=localhost\" >> ${env.WORKSPACE}/product-service/.env"
+        sh "echo \"DB_HOST=product-postgres\" >> ${env.WORKSPACE}/product-service/.env"
         sh "echo \"DB_PORT=5432\" >> ${env.WORKSPACE}/product-service/.env"
         sh "echo \"DB_NAME=product_db\" >> ${env.WORKSPACE}/product-service/.env"
 
@@ -74,6 +74,31 @@ def call(Map params) {
        
         def DOCKER_CONFIG = "${env.DOCKER_HOME}/.docker"
         def HOME = "${env.DOCKER_HOME}"    
+
+
+        def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+        
+        // Docker Network
+        sh """
+            for i in \$(seq 1 10); do
+                if nc -z "$IP" 22; then
+                    echo "Port 22 is open for Docker network creation"
+                    
+                    if ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "ubuntu@$IP" \
+                    "docker network create product-net"; then
+                        echo "Docker network created successfully."
+                        break
+                    else
+                        echo "Failed to create docker network. Retrying..."
+                        sleep 5
+                    fi
+                else
+                    echo "Waiting for SSH to be available..."
+                    sleep 5
+                fi
+            done
+        """ 
+
         
         def services = sh(
             script: "docker compose -f ${env.WORKSPACE}/product-service/${COMPOSE_FILE} config --services",
@@ -95,8 +120,6 @@ def call(Map params) {
                 docker save ${sourceImage} -o ${service}.tar
                 echo "The docker saved to ${service}.tar"
             """
-
-            def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
 
             // Wait for port 22 to be open
             sh """
@@ -122,9 +145,9 @@ def call(Map params) {
             def parameters = ""
 
             if (service != "postgres") {
-                parameters = "-p 8001:8001"
+                parameters = "--name product-service --network product-net -p 8000:8000"
             } else {
-                parameters = "-e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432"
+                parameters = "--name product-postgres --network product-net -e POSTGRES_USER=product_user -e POSTGRES_PASSWORD=product_password -e POSTGRES_DB=product_db -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432"
             }
 
             // Wait for port 22 to be open

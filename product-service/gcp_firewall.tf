@@ -9,7 +9,7 @@ resource "google_compute_firewall" "allow_web_traffic_order" {
   priority    = 1000
   allow {
     protocol = "tcp"
-    ports    = ["22", "80", "443", "8000", "5432"]
+    ports    = ["22", "80", "443", "8000"]
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["http-server", "https-server"]

@@ -62,7 +62,6 @@ resource "google_compute_instance" "docker_vm" {
     sudo ufw allow 8000/tcp
     sudo ufw allow 80/tcp
     sudo ufw allow 443/tcp
-    sudo ufw allow 5432/tcp
   EOF
 
   tags = ["docker-host","http-server","https-server"]
