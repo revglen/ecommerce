@@ -73,15 +73,10 @@ def call(Map params) {
     stage('Tag and Push order Images') {
        
         def DOCKER_CONFIG = "${env.DOCKER_HOME}/.docker"
-        def HOME = "${env.DOCKER_HOME}"    
-        
-        def services = sh(
-            script: "docker compose -f ${env.WORKSPACE}/order-service/${COMPOSE_FILE} config --services",
-            returnStdout: true
-        ).trim().split('\n')
+        def HOME = "${env.DOCKER_HOME}"   
 
         def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
-
+        
         // Docker Network
         sh """
             for i in \$(seq 1 10); do
@@ -101,7 +96,12 @@ def call(Map params) {
                     sleep 5
                 fi
             done
-        """
+        """ 
+        
+        def services = sh(
+            script: "docker compose -f ${env.WORKSPACE}/order-service/${COMPOSE_FILE} config --services",
+            returnStdout: true
+        ).trim().split('\n')        
                 
         for (service in services) {
             echo "--- Processing service: ${service} ---"
@@ -117,7 +117,7 @@ def call(Map params) {
             sh """
                 docker save ${sourceImage} -o ${service}.tar
                 echo "The docker saved to ${service}.tar"
-            
+            """
 
             // Wait for port 22 to be open
             sh """
