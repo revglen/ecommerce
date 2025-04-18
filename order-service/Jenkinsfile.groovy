@@ -80,6 +80,8 @@ def call(Map params) {
             returnStdout: true
         ).trim().split('\n')
 
+        def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+
         // Docker Network
         sh """
             for i in \$(seq 1 10); do
@@ -115,9 +117,7 @@ def call(Map params) {
             sh """
                 docker save ${sourceImage} -o ${service}.tar
                 echo "The docker saved to ${service}.tar"
-            """
-
-            def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+            
 
             // Wait for port 22 to be open
             sh """
