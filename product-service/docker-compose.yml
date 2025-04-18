@@ -59,7 +59,9 @@ services:
       SERVICE_NAME: product-service
       SERVICE_PORT: 8000
       EXTERNAL_HOST_IP: ${EXTERNAL_HOST_IP}
-
+    volumes:
+      - ./init-product-db.sql:/docker-entrypoint-initdb.d/init-product-db.sql
+      - pgdata:/var/lib/postgresql/data
     ports:
       - "8000:8000"
     networks:

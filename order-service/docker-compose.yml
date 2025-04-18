@@ -7,9 +7,9 @@ services:
     image: postgres:13-alpine
     container_name: order-db
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      #POSTGRES_PASSWORD: order_password
+      POSTGRES_DB: order_db
+      POSTGRES_USER: order_user
+      POSTGRES_PASSWORD: order_password
     volumes:
       - ./init-order-db.sql:/docker-entrypoint-initdb.d/init-order-db.sql
       - pgdata:/var/lib/postgresql/data
