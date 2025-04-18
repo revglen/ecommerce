@@ -11,7 +11,7 @@ services:
       POSTGRES_USER: order_user
       POSTGRES_PASSWORD: order_password
     volumes:
-      - ./init-order-db.sql:/docker-entrypoint-initdb.d/init-order-db.sql
+      - ./docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
       - pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"

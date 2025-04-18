@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI):
     requests.put(f"{settings.CONSUL_URL}/v1/agent/service/deregister/{service_id}")
 
 app = FastAPI(
-    lifespan=lifespan,
+    #lifespan=lifespan,
     title="Product Service",
     description="Microservice for product management",
     version="1.0.0",
