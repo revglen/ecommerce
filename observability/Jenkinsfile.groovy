@@ -17,15 +17,41 @@ def call(Map params) {
 
     def COMPOSE_FILE = 'docker-compose.yml'
     def CONSUL_IP = params.result 
+    def FIREWALL_NAME="allow-web-traffic_obs"
+    def RESOURCE_ID="projects/${env.GCP_PROJECT}/global/firewalls/${FIREWALL_NAME}"
     
-    stage('Build observability Service') {        
+    stage('Build observability Service') {   
 
-        echo "${env.WORKSPACE}/observability//${COMPOSE_FILE}"
+        sh 'terraform init'
+        //sh 'terraform plan -out=tfplan'
+        //sh 'terraform show tfplan'
+
+        
+        sh """
+            echo "[INFO] Observability with gcloud using service account..."
+
+            gcloud auth activate-service-account --key-file="$env.GOOGLE_CREDENTIALS"           
+            gcloud config set project "$env.GCP_PROJECT"
+
+            echo "[INFO] Deleting the firewall if the firewall rule '$FIREWALL_NAME' exists..."
+            gcloud compute firewall-rules delete "$FIREWALL_NAME" --project="$env.GCP_PROJECT" --quiet || true
+            echo "[INFO] Deleting the firewall if the firewall rule '$FIREWALL_NAME' exists..."
+        """      
+
+        sh """
+            terraform apply -auto-approve \
+                -var="ssh_public_key=${env.SSH_PUB_KEY}" \
+                -var="project_id=${env.TF_VAR_project_id}"
+        """
+
+        def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()     
+
+        echo "${env.WORKSPACE}/observability/${COMPOSE_FILE}"
         sh "echo \"CONSUL_HOST=${CONSUL_IP}\" > ${env.WORKSPACE}/observability/.env"
         sh "echo \"CONSUL_PORT=8500\" >> ${env.WORKSPACE}/observability/.env"
         sh "echo \"PROMETHEUS_ENABLED=true\" >> ${env.WORKSPACE}/observability/.env"
         sh "echo \"LOG_LEVEL=INFO\" >> ${env.WORKSPACE}/observability/.env"
-        sh "cat ${env.WORKSPACE}/observability//.env"
+        sh "cat ${env.WORKSPACE}/observability/.env"
         sh "docker compose -f ${env.WORKSPACE}/observability/${COMPOSE_FILE} up -d --build"
     }
     
