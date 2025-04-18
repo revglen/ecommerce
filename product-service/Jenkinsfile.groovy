@@ -98,7 +98,6 @@ def call(Map params) {
                 fi
             done
         """ 
-
         
         def services = sh(
             script: "docker compose -f ${env.WORKSPACE}/product-service/${COMPOSE_FILE} config --services",
@@ -109,17 +108,18 @@ def call(Map params) {
             echo "--- Processing service: ${service} ---"
         
             def sourceImage = sh(
-                script: "docker compose -f ${env.WORKSPACE}/product-service/${COMPOSE_FILE} config | grep 'image:' | grep -A5 '${service}' | awk '{print \$2}'",
+                //script: "docker compose -f ${env.WORKSPACE}/product-service/${COMPOSE_FILE} config | grep 'image:' | grep -A5 '${service}' | awk '{print \$2}'",
+                script: "docker compose -f ${env.WORKSPACE}/product-service/${COMPOSE_FILE} config | grep '${service}' | grep 'image:' |  awk '{print \$2}'",
                 returnStdout: true
             ).trim()
             
             echo "Source image from compose: '${sourceImage}'"
                                           
             // Save the Docker image as a tar file
-            sh """
-                docker save ${sourceImage} -o ${service}.tar
-                echo "The docker saved to ${service}.tar"
-            """
+            // sh """
+            //     docker save ${sourceImage} -o ${service}.tar
+            //     echo "The docker saved to ${service}.tar"
+            // """
 
             // // Wait for port 22 to be open
             // sh """
