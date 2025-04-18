@@ -122,11 +122,11 @@ def call(Map params) {
             echo "XXX11...."
 
             def parameters = ""
-            if (${service} != "postgres"){
+
+            if (service != "postgres") {
                 parameters = "-p 8001:8001"
-            }
-            else {
-                parameters = " -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432"
+            } else {
+                parameters = "-e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432"
             }
 
             echo "XXX112222...."

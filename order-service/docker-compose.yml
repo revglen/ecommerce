@@ -12,7 +12,6 @@ services:
       POSTGRES_PASSWORD: order_password
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     ports:
       - "5432:5432"
     networks:
