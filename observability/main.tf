@@ -72,10 +72,6 @@ output "instance_ip" {
   value = google_compute_instance.docker_vm.network_interface[0].access_config[0].nat_ip
 }
 
-output "internal_ip1" {
-  value = google_compute_instance.ubuntu_vm.network_interface[0].network_ip
-}
-
 output "ssh_private_key" {
   value     = tls_private_key.vm_ssh.private_key_openssh
   sensitive = true
