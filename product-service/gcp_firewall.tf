@@ -1,4 +1,4 @@
-resource "google_compute_firewall" "allow_web_traffic_order" {
+resource "google_compute_firewall" "allow_web_traffic_product" {
   # This will ONLY create if doesn't exist (no duplicates, no errors)
   name    = "allow-web-traffic-product"
   project = var.project_id

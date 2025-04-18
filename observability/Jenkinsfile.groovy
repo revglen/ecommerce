@@ -80,10 +80,10 @@ def call(Map params) {
 
             def parameters = ""
 
-            if (service != "postgres") {
-                parameters = "--name observability-service --network observability-net -p 8001:8001"
+            if (service != "prometheus") {
+                parameters = "-p 3000:3000"
             } else {
-                parameters = "--name observability-postgres --network observability-net -e POSTGRES_USER=observability_user -e POSTGRES_PASSWORD=observability_password -e POSTGRES_DB=observability_db -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432"
+                parameters = "-p 9090:9090"
             }
 
             // Wait for port 22 to be open
