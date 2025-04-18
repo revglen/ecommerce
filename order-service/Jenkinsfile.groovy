@@ -119,6 +119,8 @@ def call(Map params) {
                 done
             """
 
+            echo "XXX11...."
+
             def parameters = ""
             if (${service} != "postgres"){
                 parameters = "-p 8001:8001"
@@ -126,6 +128,8 @@ def call(Map params) {
             else {
                 parameters = " -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432"
             }
+
+            echo "XXX112222...."
 
             // Wait for port 22 to be open
             sh """
