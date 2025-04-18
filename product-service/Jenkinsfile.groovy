@@ -116,60 +116,60 @@ def call(Map params) {
             echo "Source image from compose: '${sourceImage}'"
                                           
             // Save the Docker image as a tar file
-            // sh """
-            //     docker save ${sourceImage} -o ${service}.tar
-            //     echo "The docker saved to ${service}.tar"
-            // """
+            sh """
+                docker save ${sourceImage} -o ${service}.tar
+                echo "The docker saved to ${service}.tar"
+            """
 
-            // // Wait for port 22 to be open
-            // sh """
-            //     for i in \$(seq 1 10); do
-            //         if nc -z -w 5 ${IP} 22; then
-            //             echo "Port 22 is open, attempting SCP..."
-            //             if scp -o StrictHostKeyChecking=no \
-            //                 -o ConnectTimeout=10 \
-            //                 -i ${env.SSH_KEY} \
-            //                 ${service}.tar .env ubuntu@${IP}:/home/ubuntu/; then
-            //                 echo "Successfully copied to GCP VM"
-            //                 break
-            //             else
-            //                 echo "SCP attempt \$i failed"
-            //             fi
-            //         else
-            //             echo "SSH not available yet (attempt \$i/10)"
-            //         fi
-            //         sleep 5
-            //     done
-            // """
+            // Wait for port 22 to be open
+            sh """
+                for i in \$(seq 1 10); do
+                    if nc -z -w 5 ${IP} 22; then
+                        echo "Port 22 is open, attempting SCP..."
+                        if scp -o StrictHostKeyChecking=no \
+                            -o ConnectTimeout=10 \
+                            -i ${env.SSH_KEY} \
+                            ${service}.tar .env ubuntu@${IP}:/home/ubuntu/; then
+                            echo "Successfully copied to GCP VM"
+                            break
+                        else
+                            echo "SCP attempt \$i failed"
+                        fi
+                    else
+                        echo "SSH not available yet (attempt \$i/10)"
+                    fi
+                    sleep 5
+                done
+            """
 
-            // def parameters = ""
+            def parameters = ""
 
-            // if (service != "postgres") {
-            //     parameters = "--name product-service --network product-net -p 8000:8000"
-            // } else {
-            //     parameters = "--name product-postgres --network product-net -e POSTGRES_USER=product_user -e POSTGRES_PASSWORD=product_password -e POSTGRES_DB=product_db -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432"
-            // }
+            if (service != "postgres") {
+                parameters = "--name product-service --network product-net -p 8000:8000"
+            } else {
+                parameters = "--name product-postgres --network product-net -e POSTGRES_USER=product_user -e POSTGRES_PASSWORD=product_password -e POSTGRES_DB=product_db -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432"
+            }
 
-            // // Wait for port 22 to be open
-            // sh """
-            //     for i in \$(seq 1 10); do
-            //         if nc -z "$IP" 22; then
-            //             echo "Port 22 is open for Docker command execution."
+            // Wait for port 22 to be open
+            sh """
+                for i in \$(seq 1 10); do
+                    if nc -z "$IP" 22; then
+                        echo "Port 22 is open for Docker command execution."
                         
-            //             if ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "ubuntu@$IP" \
-            //             "docker load -i /home/ubuntu/${service}.tar && docker run --env-file ./.env -d ${parameters} $sourceImage"; then
-            //                 echo "Docker commands executed successfully."
-            //                 break
-            //             else
-            //                 echo "Failed to execute Docker commands. Retrying..."
-            //                 sleep 5
-            //             fi
-            //         else
-            //             echo "Waiting for SSH to be available..."
-            //             sleep 5
-            //         fi
-            //     done
-            // """
+                        if ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "ubuntu@$IP" \
+                        "docker load -i /home/ubuntu/${service}.tar && docker run --env-file ./.env -d ${parameters} $sourceImage"; then
+                            echo "Docker commands executed successfully."
+                            break
+                        else
+                            echo "Failed to execute Docker commands. Retrying..."
+                            sleep 5
+                        fi
+                    else
+                        echo "Waiting for SSH to be available..."
+                        sleep 5
+                    fi
+                done
+            """
             
             sh """            
                 rm -rf ${service}.tar
