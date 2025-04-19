@@ -19,6 +19,10 @@ def call(Map params) {
     def FIREWALL_NAME="allow-web-traffic-order"
     def RESOURCE_ID="projects/${env.GCP_PROJECT}/global/firewalls/${FIREWALL_NAME}"
     def CONSUL_ADDRESS = params.result
+    def TIMEOUT=300     // 5 minutes (300 seconds)
+    def INTERVAL=10     // Check every 10 seconds
+    def COMPLETED_STR="COMPLETED"
+    def INSTANCE_NAME="order-vm"
     def IP=""
     
     stage('Call GCloud and create a VM in GCP') {       
@@ -76,7 +80,7 @@ def call(Map params) {
                 --priority=1000 \\
                 --network=default \\
                 --action=ALLOW \\
-                --rules=tcp:80,tcp:443,tcp:8500,tcp:22 \\
+                --rules=tcp:80,tcp:443,tcp:8001,tcp:22 \\
                 --target-tags=http-server,https-server \\
                 --description="Allow HTTP (80), HTTPS (443), and custom web traffic (8500)"
         """

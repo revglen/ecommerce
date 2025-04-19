@@ -88,6 +88,11 @@ sudo ufw allow 22/tcp comment 'SSH'
 sudo ufw allow 80/tcp comment 'HTTP'
 sudo ufw allow 443/tcp comment 'HTTPS'
 sudo ufw allow 8500/tcp comment 'Custom Port 8500'
+sudo ufw allow 8600/tcp 
+sudo ufw allow 8300/tcp 
+sudo ufw allow 8301/tcp 
+sudo ufw allow 8301/udp 
+sudo ufw allow 8600/udp
 
 # Enable UFW
 sudo ufw --force enable

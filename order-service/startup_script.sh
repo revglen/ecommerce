@@ -87,7 +87,7 @@ sudo ufw default allow outgoing
 sudo ufw allow 22/tcp comment 'SSH'
 sudo ufw allow 80/tcp comment 'HTTP'
 sudo ufw allow 443/tcp comment 'HTTPS'
-sudo ufw allow 8500/tcp comment 'Custom Port 8500'
+sudo ufw allow 8001/tcp comment 'Custom Port 8500'
 
 # Enable UFW
 sudo ufw --force enable

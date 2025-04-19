@@ -80,7 +80,7 @@ def call(Map params) {
                 --priority=1000 \\
                 --network=default \\
                 --action=ALLOW \\
-                --rules=tcp:80,tcp:443,tcp:8500,tcp:22 \\
+                --rules=tcp:80,tcp:443,tcp:8002,tcp:22 \\
                 --target-tags=http-server,https-server \\
                 --description="Allow HTTP (80), HTTPS (443), and custom web traffic (8500)"
         """
