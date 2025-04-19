@@ -52,17 +52,17 @@ def call(Map params) {
 
             echo "⏳ Waiting for startup script on instance ''' + INSTANCE_NAME + ''' to complete..."
 
-            while [ \$(date +%s) -lt \$end_time ]; do
-                if status=\$(gcloud compute ssh ${INSTANCE_NAME} \
-                    --zone=${env.ZONE} \
-                    --command="cat /tmp/startup-script-complete 2>/dev/null" \
+            for i in {1..''' + TIMEOUT/INTERVAL + '''}; do
+                if status=\$(gcloud compute ssh ''' + INSTANCE_NAME + ''' \\
+                    --zone=''' + env.ZONE + ''' \\
+                    --command="cat /tmp/startup-script-complete 2>/dev/null" \\
                     --quiet 2>/dev/null) && \\
-                [[ "\$status" == *"${COMPLETED_STR}"* ]]; then
-                    echo "✅ Completed: \$status"
+                [[ "\$status" == *''' + COMPLETED_STR + '''* ]]; then
+                    echo "✅ \$status"
                     break
                 fi
                 printf "."
-                sleep ${INTERVAL}
+                sleep ''' + INTERVAL + '''
             done
         '''
 
