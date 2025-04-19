@@ -61,9 +61,9 @@ def call(Map params) {
                 fi
 
                 # Attempt to check if startup completion marker exists
-                status=\\$(gcloud compute ssh "${INSTANCE_NAME}" --zone='${env.ZONE}' \\
-                                --command="cat /tmp/startup-script-complete 2>/dev/null || echo 'Not found'" \\
-                                --quiet 2>/dev/null)
+                status=$(gcloud compute ssh "''' + INSTANCE_NAME + '''" --zone="''' + env.ZONE + '''" \\
+                    --command="cat /tmp/startup-script-complete 2>/dev/null || echo 'Not found'" \\
+                    --quiet 2>/dev/null)
 
                 if echo "$status" | grep -q "''' + COMPLETED_STR + '''"; then
                     echo "✅ Startup script completed: $(echo "$status" | grep "''' + COMPLETED_STR + '''")"
@@ -73,7 +73,9 @@ def call(Map params) {
                     sleep ''' + INTERVAL + '''
                 fi
             done
+        '''
 
+        sh """
             gcloud compute firewall-rules create allow-web-traffic \\
                 --direction=INGRESS \\
                 --priority=1000 \\
@@ -82,7 +84,7 @@ def call(Map params) {
                 --rules=tcp:80,tcp:443,tcp:8500 \\
                 --target-tags=http-server,https-server \\
                 --description="Allow HTTP (80), HTTPS (443), and custom web traffic (8500)"
-        '''
+        """
 
         def IP = sh(
                 script: """
