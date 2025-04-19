@@ -77,16 +77,16 @@ def call(Map params) {
                 --description="Allow HTTP (80), HTTPS (443), and custom web traffic (8500)"
         """
 
-        def IP = sh(
-                script: """
-                    gcloud compute instances list \
-                    --project=${env.GCP_PROJECT} \
-                    --filter="name=${env.INSTANCE_NAME}" \
-                    --format='value(networkInterfaces[0].accessConfigs[0].natIP)' \
-                    --quiet
-                """,
-                returnStdout: true
-            ).trim()
+       def IP = sh(
+            script: """
+                gcloud compute instances list \\
+                --project=${env.GCP_PROJECT} \\
+                --filter="name=${INSTANCE_NAME}" \\
+                --format='value(networkInterfaces[0].accessConfigs[0].natIP)' \\
+                --quiet
+            """.trim(),
+            returnStdout: true
+        ).trim()
 
         CONSUL_IP = IP
         sh "ssh-keygen -R ${IP} || true"
