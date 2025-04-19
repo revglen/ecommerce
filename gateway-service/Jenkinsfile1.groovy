@@ -31,10 +31,16 @@ def call(Map params) {
             gcloud compute firewall-rules delete "$FIREWALL_NAME" --project="$env.GCP_PROJECT" --quiet || true
             echo "[INFO] Deleting the firewall if the firewall rule '$FIREWALL_NAME' exists..."
 
-            gcloud --log-http --verbosity=debug compute instances create gateway-vm \
-                       --"$env.GCP_PROJECT" --zone="$env.ZONE" --machine-type=e2-standard-2  \
-                       --image-family=ubuntu-2204-lts     --image-project=ubuntu-os-cloud  \
-                       --tags=http-server,https-server     --metadata-from-file startup-script=./startup_script.sh
+            
+            gcloud compute instances create ${INSTANCE_NAME} \\
+                --project=''' + env.GCP_PROJECT + ''' \\
+                --zone=''' + env.ZONE + ''' \\
+                --machine-type=e2-standard-2 \\
+                --image-family=ubuntu-2204-lts \\
+                --image-project=ubuntu-os-cloud \\
+                --tags=http-server,https-server \\
+                --metadata-from-file startup-script=./startup_script.sh
+            
 
             #checking to ensure that the VM server is running and the startup_script has executed so that we can move forward
             start_time=$(date +%s)
@@ -48,8 +54,8 @@ def call(Map params) {
                 fi
 
                 # Check completion status
-                status=$(gcloud compute ssh "$env.INSTANCE_NAME" --zone="$env.ZONE" \
-                    --command="cat /tmp/startup-script-complete 2>/dev/null || echo 'Not found'" \
+                status=$(gcloud compute ssh "$env.INSTANCE_NAME" --zone="$env.ZONE" \\
+                    --command="cat /tmp/startup-script-complete 2>/dev/null || echo 'Not found'" \\
                     --quiet 2>/dev/null)
 
                 if echo "$status" | grep -q "$COMPLETED_STR"; then
