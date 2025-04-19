@@ -61,9 +61,9 @@ def call(Map params) {
                 fi
 
                 # Attempt to check if startup completion marker exists
-                status=$(gcloud compute ssh "''' + INSTANCE_NAME + '''" --zone="''' + env.ZONE + '''" \\
-                    --command="cat /tmp/startup-script-complete 2>/dev/null || echo 'Not found'" \\
-                    --quiet 2>/dev/null)
+                status=\\$(gcloud compute ssh "${INSTANCE_NAME}" --zone='${env.ZONE}' \\
+                                --command="cat /tmp/startup-script-complete 2>/dev/null || echo 'Not found'" \\
+                                --quiet 2>/dev/null)
 
                 if echo "$status" | grep -q "''' + COMPLETED_STR + '''"; then
                     echo "✅ Startup script completed: $(echo "$status" | grep "''' + COMPLETED_STR + '''")"
