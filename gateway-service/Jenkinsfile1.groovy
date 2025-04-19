@@ -54,23 +54,23 @@ def call(Map params) {
 
             while true; do
                 current_time=$(date +%s)
-
+                
                 if [ "$current_time" -ge "$end_time" ]; then
-                    echo "❌ Timeout reached - script did not complete within ''' + TIMEOUT + ''' seconds."
+                    echo "❌ Timeout reached"
                     exit 1
                 fi
 
-                # Attempt to check if startup completion marker exists
-                status=$(gcloud compute ssh "''' + INSTANCE_NAME + '''" --zone="''' + env.ZONE + '''" \\
-                    --command="cat /tmp/startup-script-complete 2>/dev/null || echo 'Not found'" \\
+                status=$(gcloud compute ssh gateway-vm \
+                    --zone=europe-west2-b \
+                    --command="cat /tmp/startup-script-complete 2>/dev/null || echo 'Not found'" \
                     --quiet 2>/dev/null)
-
-                if echo "$status" | grep -q "''' + COMPLETED_STR + '''"; then
-                    echo "✅ Startup script completed: $(echo "$status" | grep "''' + COMPLETED_STR + '''")"
+                
+                if [[ "$status" == *"COMPLETED"* ]]; then
+                    echo "✅ Startup complete: $status"
                     break
                 else
                     printf "."
-                    sleep ''' + INTERVAL + '''
+                    sleep 10
                 fi
             done
         '''
