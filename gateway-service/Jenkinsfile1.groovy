@@ -32,7 +32,7 @@ def call(Map params) {
             echo "[INFO] Deleting the firewall if the firewall rule '$FIREWALL_NAME' exists..."
 
             
-            gcloud compute instances create "${INSTANCE_NAME}" \\
+            gcloud compute instances create \"${INSTANCE_NAME}\" \\
                 --project=''' + env.GCP_PROJECT + ''' \\
                 --zone=''' + env.ZONE + ''' \\
                 --machine-type=e2-standard-2 \\
@@ -48,13 +48,13 @@ def call(Map params) {
 
             while true; do
                 current_time=$(date +%s)
-                if [ "$current_time" -ge "$end_time" ]; then
-                    echo "❌ Timeout reached - script did not complete within "$TIMEOUT" seconds."
+                if [ \"$current_time\" -ge \"$end_time\" ]; then
+                    echo "❌ Timeout reached - script did not complete within \"$TIMEOUT\" seconds."
                     exit 1
                 fi
 
                 # Check completion status
-                status=$(gcloud compute ssh "${INSTANCE_NAME}" --zone="$env.ZONE" \\
+                status=$(gcloud compute ssh \"${INSTANCE_NAME}\" --zone=\"$env.ZONE\" \\
                     --command="cat /tmp/startup-script-complete 2>/dev/null || echo 'Not found'" \\
                     --quiet 2>/dev/null)
 
