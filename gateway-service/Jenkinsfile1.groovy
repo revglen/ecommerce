@@ -42,7 +42,7 @@ def call(Map params) {
                 --image-family=ubuntu-2204-lts \\
                 --image-project=ubuntu-os-cloud \\
                 --tags=http-server,https-server \\
-                --metadata-from-file startup-script=./startup_script.sh,,ssh-keys='${env.SSH_PUB_KEY}'
+                --metadata-from-file startup-script=./startup_script.sh,ssh-keys='${env.SSH_PUB_KEY}'
                 
         """    
             
