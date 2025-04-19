@@ -71,7 +71,7 @@ sudo systemctl enable docker
 sudo systemctl start docker
 
 # Add current user to docker group
-sudo usermod -aG docker $USER || sudo usermod -aG docker ubuntu
+sudo usermod -aG docker ubuntu
 
 # ==========================================
 # FIREWALL CONFIGURATION (UFW)
