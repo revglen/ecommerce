@@ -76,10 +76,12 @@ def call(Map params) {
         // """
    
         def IP = sh(
-            script: "gcloud compute instances list --filter="${INSTANCE_NAME}" \
-                                    --format='value(networkInterfaces[0].accessConfigs[0].natIP)'",
-            returnStdout: true
-        ).trim()
+                script: '''
+                    gcloud compute instances list --filter="name=${INSTANCE_NAME}" \
+                    --format='value(networkInterfaces[0].accessConfigs[0].natIP)'
+                ''',
+                returnStdout: true
+            ).trim()
 
         CONSUL_IP = IP
         sh "ssh-keygen -R ${IP} || true"
