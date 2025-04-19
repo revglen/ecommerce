@@ -15,8 +15,8 @@ def call(Map params) {
     def FIREWALL_NAME="allow-web-traffic"
     def RESOURCE_ID="projects/${env.GCP_PROJECT}/global/firewalls/${FIREWALL_NAME}"
 
-    def TIMEOUT=300      # 5 minutes (300 seconds)
-    def INTERVAL=10      # Check every 10 seconds
+    def TIMEOUT=300     // 5 minutes (300 seconds)
+    def INTERVAL=10     // Check every 10 seconds
     def COMPLETED_STR="COMPLETED"
     
     stage('Call Gcloud cli and create a VM in GCP') {         
