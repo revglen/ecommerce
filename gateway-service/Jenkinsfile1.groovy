@@ -47,26 +47,26 @@ def call(Map params) {
         sh """
             # Checking if the VM is up and startup_script has completed
 
-            start_time=\$(date +%s)
-            end_time=\$((start_time + "${TIMEOUT}"))
+            start_time=\\$(date +%s)
+            end_time=\\\$((start_time + "${TIMEOUT}"))
 
-            echo "⏳ Waiting for startup script on instance "${INSTANCE_NAME}" to complete..."
+            echo "⏳ Waiting for startup script on instance ${INSTANCE_NAME} to complete..."
 
             while true; do
-                current_time=\$(date +%s)
-                
-                if [ "\$current_time" -ge "\$end_time" ]; then
-                    echo "❌ Timeout reached - script did not complete within "${TIMEOUT}" seconds."
+                current_time=\\$(date +%s)
+
+                if [ "\\\$current_time" -ge "\\\$end_time" ]; then
+                    echo "❌ Timeout reached - script did not complete within ${TIMEOUT} seconds."
                     exit 1
                 fi
 
                 # Attempt to check if startup completion marker exists
-                status=\$(gcloud compute ssh "${INSTANCE_NAME}" --zone='${env.ZONE}' \\
+                status=\\$(gcloud compute ssh "${INSTANCE_NAME}" --zone='${env.ZONE}' \\
                     --command="cat /tmp/startup-script-complete 2>/dev/null || echo 'Not found'" \\
                     --quiet 2>/dev/null)
 
-                if echo "\$status" | grep -q "${COMPLETED_STR}"; then
-                    echo "✅ Startup script completed: \$(echo \"\$status\" | grep "${COMPLETED_STR}")"
+                if echo "\\\$status" | grep -q "${COMPLETED_STR}"; then
+                    echo "✅ Startup script completed: \\$(echo \"\\\$status\" | grep \"${COMPLETED_STR}\")"
                     break
                 else
                     printf "."
@@ -74,6 +74,7 @@ def call(Map params) {
                 fi
             done
         """
+
    
         def IP = sh(
                 script: '''
