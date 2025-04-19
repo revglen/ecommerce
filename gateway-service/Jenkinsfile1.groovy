@@ -18,6 +18,7 @@ def call(Map params) {
     def INTERVAL=10     // Check every 10 seconds
     def COMPLETED_STR="COMPLETED"
     def INSTANCE_NAME="gateway-vm"
+    def IP=""
     
     stage('Call Gcloud cli and create a VM in GCP') {         
             
@@ -77,7 +78,7 @@ def call(Map params) {
                 --description="Allow HTTP (80), HTTPS (443), and custom web traffic (8500)"
         """
 
-       def IP = sh(
+       IP = sh(
             script: """
                 gcloud compute instances list \\
                 --project=${env.GCP_PROJECT} \\
@@ -121,8 +122,6 @@ def call(Map params) {
                 docker save ${sourceImage} -o ${service}.tar
                 echo "The docker saved to ${service}.tar"
             """
-
-            def IP = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
 
             def port = ""
             if (service == 'api-gateway') {
