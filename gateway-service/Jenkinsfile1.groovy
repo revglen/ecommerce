@@ -43,7 +43,7 @@ def call(Map params) {
                 --image-project=ubuntu-os-cloud \\
                 --tags=http-server,https-server \\
                 --metadata-from-file startup-script=./startup_script.sh \\
-                ---metadata="ssh-keys=jenkins:\$(ssh-keygen -y -f ${env.SSH_PUB_KEY})"
+                --metadata="ssh-keys=jenkins:\$(ssh-keygen -y -f ${env.SSH_PUB_KEY})"
                 
         """    
             
