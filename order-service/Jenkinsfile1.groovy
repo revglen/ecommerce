@@ -71,7 +71,7 @@ def call(Map params) {
         '''
 
         sh """
-            gcloud compute firewall-rules create allow-web-traffic \\
+            gcloud compute firewall-rules create '$FIREWALL_NAME' \\
                 --direction=INGRESS \\
                 --priority=1000 \\
                 --network=default \\
