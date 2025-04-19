@@ -14,10 +14,10 @@ def call(Map params) {
     def CONSUL_IP = ''
     def FIREWALL_NAME="allow-web-traffic"
     def RESOURCE_ID="projects/${env.GCP_PROJECT}/global/firewalls/${FIREWALL_NAME}"
-
     def TIMEOUT=300     // 5 minutes (300 seconds)
     def INTERVAL=10     // Check every 10 seconds
     def COMPLETED_STR="COMPLETED"
+    def INSTANCE_NAME="gateway-vm"
     
     stage('Call Gcloud cli and create a VM in GCP') {         
             
@@ -54,7 +54,7 @@ def call(Map params) {
                 fi
 
                 # Check completion status
-                status=$(gcloud compute ssh "$env.INSTANCE_NAME" --zone="$env.ZONE" \\
+                status=$(gcloud compute ssh "${INSTANCE_NAME}" --zone="$env.ZONE" \\
                     --command="cat /tmp/startup-script-complete 2>/dev/null || echo 'Not found'" \\
                     --quiet 2>/dev/null)
 
@@ -70,7 +70,7 @@ def call(Map params) {
         """ 
 
         def IP = sh(
-            script: "gcloud compute instances list --filter="name=$env.INSTANCE_NAME" \
+            script: "gcloud compute instances list --filter="${INSTANCE_NAME}" \
                                     --format='value(networkInterfaces[0].accessConfigs[0].natIP)'",
             returnStdout: true
         ).trim()
