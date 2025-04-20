@@ -28,6 +28,18 @@ def call(Map params) {
     stage('Build observability Service') {   
 
         sh """
+            echo "[INFO] Authenticating with gcloud using service account..."
+
+            gcloud auth activate-service-account --key-file="$env.GOOGLE_CREDENTIALS"           
+            gcloud config set project "$env.GCP_PROJECT"
+
+            echo "[INFO] Deleting the firewall if the firewall rule '$FIREWALL_NAME' exists..."
+            gcloud compute firewall-rules delete "$FIREWALL_NAME" --project="$env.GCP_PROJECT" --quiet || true
+            echo "[INFO] Deleting the firewall if the firewall rule '$FIREWALL_NAME' exists..."
+
+        """
+        
+        sh """
             gcloud compute instances create "${INSTANCE_NAME}" \\
                 --project='${env.GCP_PROJECT}' \\
                 --zone='${env.ZONE}' \\
