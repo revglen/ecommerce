@@ -46,16 +46,13 @@ def update_order(
         if not db_order:
             return None
         
-        print("44444")
-        update_data = order.dict(exclude_unset=True)
-        print("AAAA")
+        update_data = order.dict(exclude_unset=True)        
         for field, value in update_data.items():
             print(f"\n{field}:{value}",field,value)
             print ("\n" + str(type(value)))
             if field != "items":
                 setattr(db_order, field, value)
         
-        print("5555")
         if order.items is not None:
             # Delete existing items
             db.query(models.OrderItem).filter(models.OrderItem.order_id == order_id).delete()
@@ -70,7 +67,6 @@ def update_order(
                 )
                 db.add(db_item)
         
-        print("88888")
         db.commit()
         db.refresh(db_order)
 

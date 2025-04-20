@@ -98,14 +98,11 @@ def update_order(
     db: Session = Depends(database.get_db)
 ):    
     try:
-        print("1111")
         db_order = crud.get_order(db, order_id=order_id)
         if db_order is None:
             raise HTTPException(status_code=404, detail="Order not found")
         
-        print("2222")
         upd_prod = crud.update_order(db=db, order_id=order_id, order=order)
-        print("3333")
         logger.info("Order updated successfully")
         return upd_prod
     except Exception as e:
