@@ -106,6 +106,27 @@ def call(Map params) {
     }
     
     stage('Tag and Push auth Images') {
+
+        // Docker Network
+        sh """
+            for i in \$(seq 1 10); do
+                if nc -z "$IP" 22; then
+                    echo "Port 22 is open for Docker network creation"
+                    
+                    if ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "ubuntu@$IP" \
+                    "docker network create obs-net"; then
+                        echo "Docker network created successfully."
+                        break
+                    else
+                        echo "Failed to create docker network. Retrying..."
+                        sleep 5
+                    fi
+                else
+                    echo "Waiting for SSH to be available..."
+                    sleep 5
+                fi
+            done
+        """ 
        
         def DOCKER_CONFIG = "${env.DOCKER_HOME}/.docker"
         def HOME = "${env.DOCKER_HOME}"    
@@ -184,6 +205,10 @@ def call(Map params) {
             sh """            
                 rm -rf ${service}.tar
                 echo "Deleted the tar file ${service}.tar"
+
+                docker stop ${service} || true
+                docker rm ${service} || true
+                docker rmi ${sourceImage} || true
             """                                
         }
     }   
