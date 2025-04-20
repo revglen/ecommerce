@@ -23,7 +23,6 @@ def get_products(
 
     return query.offset(skip).limit(limit).all()
 
-
 def create_product(db:Session, product: schemas.ProductCreate) -> models.Product:
     db_product=models.Product(**product.dict())
     db.add(db_product)
@@ -47,8 +46,13 @@ def update_product(
         db.commit()
         db.refresh(db_product)
         logger.info(f"Updated product {product_id}")
-        
-        return db_product
+
+        productUpdateResp = schemas.ProductUpdateResponse(
+            id=product_id,
+            **{k: v for k, v in product.dict().items() 
+                if k in schemas.ProductUpdateResponse.__fields__})
+
+        return productUpdateResp       
 
 def delete_product(db: Session, product_id: int) -> schemas.ProductDeleteResponse:
     db_product = get_product(db, product_id)
@@ -59,7 +63,7 @@ def delete_product(db: Session, product_id: int) -> schemas.ProductDeleteRespons
         return delResponse
     
     db.delete(db_product)
-    db.commit()
+    db.commit()    
     logger.info(f"Deleted product {product_id}")
     
     delResponse.success = True

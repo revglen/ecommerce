@@ -32,7 +32,7 @@ class Product(ProductBase):
 
 class ProductResponse(BaseModel):
     success: bool = True
-    data: Product
+    data: Product = None
 
 class ProductListResponse(BaseModel):
     success: bool = True
@@ -41,4 +41,13 @@ class ProductListResponse(BaseModel):
 
 class ProductDeleteResponse(BaseModel):
     success: bool = True
-    id: int
+    id: int=Field(0, ge=0)
+
+class ProductUpdateResponse(BaseModel):
+    id:int=Field(0, ge=0)
+    name: Optional[str]=Field(None, max_length=255)
+    description:Optional[str]=Field(None, max_length=1000)
+    price:float = Field(0, gt=0)
+    category:Optional[str]=Field(None, max_length=100)
+    stock:int=Field(0, ge=0)
+    is_active:Optional[bool]=None

@@ -11,6 +11,7 @@ from app.dependencies import get_api_key, verify_token
 from app.custom_logging import logger
 
 router = APIRouter(dependencies=[Depends(get_api_key), Depends(verify_token)])
+#router = APIRouter(dependencies=[Depends(get_api_key)])
 cb=CircuitBreaker(failure_threshold=3, recovery_timeout=30)
 
 @router.post(
@@ -89,7 +90,7 @@ async def read_product(product_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{product_id}", 
-            response_model=schemas.ProductResponse,
+            response_model=schemas.ProductUpdateResponse,
             status_code=status.HTTP_200_OK)
 def update_product(
     product_id: int, 
@@ -98,12 +99,12 @@ def update_product(
 ):    
     try:
         db_product = crud.get_product(db, product_id=product_id)
-        logger.info("Product updated successfully")
-        
         if db_product is None:
             raise HTTPException(status_code=404, detail="Product not found")
-    
-        return crud.update_product(db=db, product_id=product_id, product=product)
+        
+        upd_prod = crud.update_product(db=db, product_id=product_id, product=product)
+        logger.info("Product updated successfully")
+        return upd_prod
     except Exception as e:
         logger.error(f"Uodate product error: {str(e)}")
         raise HTTPException(
@@ -112,14 +113,17 @@ def update_product(
         )
 
 @router.delete("/{product_id}", 
-               response_model=schemas.Product,
+               response_model=schemas.ProductDeleteResponse,
                status_code=status.HTTP_200_OK)
 def delete_product(product_id: int, db: Session = Depends(get_db)):
     try:
         db_product = crud.get_product(db, product_id=product_id)
         if db_product is None:
             raise HTTPException(status_code=404, detail="Product not found")
-        return crud.delete_product(db=db, product_id=product_id)
+    
+        pp = crud.delete_product(db=db, product_id=product_id)
+        print ("5555....")
+        return pp
     except Exception as e:
         logger.error(f"Delete product error: {str(e)}")
         raise HTTPException(

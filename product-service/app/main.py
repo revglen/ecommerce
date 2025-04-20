@@ -1,6 +1,7 @@
 import requests
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 from app.routers import products, health
 from app.database import engine
 from app.models import Base
@@ -93,5 +94,5 @@ async def startup_event():
 async def shutdown_event():
     logger.info("Shutting down Product Service")
     
-#if __name__ == "__main__":
-#    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+if __name__ == "__main__":
+   uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
