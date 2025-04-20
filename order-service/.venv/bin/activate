@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV=/home/vboxuser/fastapi/ec/.venv
+VIRTUAL_ENV=/home/vboxuser/fastapi/ecommerce/order-service/.venv
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

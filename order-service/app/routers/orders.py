@@ -30,12 +30,13 @@ def create_order(order: schemas.OrderCreate, db: Session = Depends(database.get_
                 quantity=item.quantity,
                 unit_price=item.unit_price
             )
+
             db.add(db_item)
-        
         db.commit()
         db.refresh(db_order)
 
         logger.info("Order created successfully")
+        print (db_order)
 
         return db_order
     except Exception as e:
@@ -48,7 +49,7 @@ def create_order(order: schemas.OrderCreate, db: Session = Depends(database.get_
 @router.get("/{order_id}", response_model=schemas.Order)
 def read_order(order_id: int, db: Session = Depends(database.get_db)):
     try:
-        order = db.query(models.Order).filter(models.Order.id == order_id).first()
+        order = crud.get_order(db, order_id)
         if not order:
             logger.warning("Order not found")
             raise HTTPException(status_code=404, detail="Order not found")
@@ -58,7 +59,7 @@ def read_order(order_id: int, db: Session = Depends(database.get_db)):
     except Exception as e:
         logger.error(f"Get orders error: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Could not fetch order")
 
 @router.get(
@@ -85,5 +86,48 @@ async def read_orders(
     except Exception as e:
         logger.error(f"Get orders error: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Could not fetch orders")
+
+@router.put("/{order_id}", 
+            response_model=schemas.OrderUpdateResponse,
+            status_code=status.HTTP_200_OK)    
+def update_order(
+    order_id: int, 
+    order: schemas.OrderUpdate, 
+    db: Session = Depends(database.get_db)
+):    
+    try:
+        print("1111")
+        db_order = crud.get_order(db, order_id=order_id)
+        if db_order is None:
+            raise HTTPException(status_code=404, detail="Order not found")
+        
+        print("2222")
+        upd_prod = crud.update_order(db=db, order_id=order_id, order=order)
+        print("3333")
+        logger.info("Order updated successfully")
+        return upd_prod
+    except Exception as e:
+        logger.error(f"Uodate order error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Could not update order"
+        )
+    
+@router.delete("/{order_id}", response_model=schemas.OrderDeleteResponse)
+def delete_order(order_id: int, db: Session = Depends(database.get_db)):
+    try:
+        order = crud.delete_order(db, order_id)
+        if not order:
+            logger.warning("Order not found")
+            raise HTTPException(status_code=404, detail="Order not found")
+        
+        logger.info("Deleted Order")
+        return order
+    except Exception as e:
+        logger.error(f"Delete Order error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not delete order")
+    

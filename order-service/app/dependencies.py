@@ -32,6 +32,7 @@ def verify_token(token:str=Depends(get_token_header), api_key: str = Depends(get
        print ("API Key: " + api_key)
        
        user:str = security.SecurityUtil().get_current_user(token, api_key)
+       
        print("The user: " + user)
        return user
     except JWTError:
@@ -46,9 +47,3 @@ def verify_token(token:str=Depends(get_token_header), api_key: str = Depends(get
        )
     
     return true
-    
-#def get_current_user(
-#        token:str = Depends(verify_token),
-#        db:Session=Depends(get_db)):
-#    pass
-
