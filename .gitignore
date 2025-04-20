@@ -12,6 +12,7 @@
 *.idea
 .vscode/
 .venv/
+venv/
 .env
 *.env
 *.terraform/
