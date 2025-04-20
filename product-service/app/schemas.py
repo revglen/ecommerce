@@ -38,3 +38,7 @@ class ProductListResponse(BaseModel):
     success: bool = True
     data: list[Product]
     count: int
+
+class ProductDeleteResponse(BaseModel):
+    success: bool = True
+    id: int

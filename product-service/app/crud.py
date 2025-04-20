@@ -50,15 +50,20 @@ def update_product(
         
         return db_product
 
-def delete_product(db: Session, product_id: int) -> bool:
+def delete_product(db: Session, product_id: int) -> schemas.ProductDeleteResponse:
     db_product = get_product(db, product_id)
+    delResponse = schemas.ProductDeleteResponse()
+    delResponse.id =  product_id
     if not db_product:
-        return False
+        delResponse.success = False
+        return delResponse
     
     db.delete(db_product)
     db.commit()
     logger.info(f"Deleted product {product_id}")
-    return True
+    
+    delResponse.success = True
+    return delResponse
 
 def reserve_product_stock(db: Session, product_id: int, quantity: int) -> bool:
     product = get_product(db, product_id)
