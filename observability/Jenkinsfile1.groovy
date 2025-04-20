@@ -22,7 +22,7 @@ def call(Map params) {
     def TIMEOUT=300     // 5 minutes (300 seconds)
     def INTERVAL=10     // Check every 10 seconds
     def COMPLETED_STR="COMPLETED"
-    def INSTANCE_NAME="product-vm"
+    def INSTANCE_NAME="obs-vm"
     def IP=""
     
     stage('Build observability Service') {   
