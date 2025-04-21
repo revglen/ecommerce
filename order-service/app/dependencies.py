@@ -45,5 +45,3 @@ def verify_token(token:str=Depends(get_token_header), api_key: str = Depends(get
        raise HTTPException( status_code=status.HTTP_401_UNAUTHORIZED,
            detail="Invalid token"
        )
-    
-    return true

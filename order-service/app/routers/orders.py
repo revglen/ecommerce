@@ -116,15 +116,15 @@ def update_order(
 def delete_order(order_id: int, db: Session = Depends(database.get_db)):
     try:
         order = crud.delete_order(db, order_id)
-        if not order:
+        if not order or order.success == False:
             logger.warning("Order not found")
-            raise HTTPException(status_code=404, detail="Order not found")
+            raise HTTPException(status_code=204, detail="Order not found")
         
         logger.info("Deleted Order")
         return order
     except Exception as e:
         logger.error(f"Delete Order error: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_204_NO_CONTENT,
             detail="Could not delete order")
     
