@@ -370,3 +370,6 @@ docker-compose.yml.fly
 docker-compose.yml.railway
 docker-compose.yml.render
 
+
+#Consul
+consul-data/
